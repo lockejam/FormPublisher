@@ -147,7 +147,7 @@ namespace FormPublisher
                             index++;
                         }
 
-                        foreach (var field in acroForm.GetFormFields())
+                        foreach (var field in acroForm.GetAllFormFields())
                         {
                             field.Value.SetFieldName($"{field.Key}_sheet({sheetNumber})");
                         }
