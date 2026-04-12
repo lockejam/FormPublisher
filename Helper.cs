@@ -1,5 +1,6 @@
 ﻿using FormPublisher.CustomAttributes;
 using FormPublisher.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -15,6 +16,8 @@ namespace FormPublisher
         /// <returns></returns>
         public static IEnumerable<FormField> GetFormFields(this IFormPublisher form)
         {
+            ArgumentNullException.ThrowIfNull(form);
+
             return form.GetType()
                        .GetProperties()
                        .Select(prop => new
@@ -46,10 +49,20 @@ namespace FormPublisher
         /// <returns></returns>
         public static IEnumerable<DataLine> GetFormFields(this IEnumerable<IDataLine> datalines)
         {
-            return datalines.Select(line => new DataLine
+            ArgumentNullException.ThrowIfNull(datalines);
+
+            return datalines.Select((line, index) =>
             {
-                SkipLineNumber = line.SkipLineNumber,
-                FormFields = line.GetFormFields()
+                if (line is null)
+                {
+                    throw new InvalidOperationException($"Items contains a null entry at index {index}.");
+                }
+
+                return new DataLine
+                {
+                    SkipLineNumber = line.SkipLineNumber,
+                    FormFields = line.GetFormFields()
+                };
             });
         }
 

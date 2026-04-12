@@ -3,6 +3,7 @@ using FormPublisher.Interfaces;
 using iText.Forms;
 using iText.Kernel.Pdf;
 using iText.Kernel.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,6 +21,7 @@ namespace FormPublisher
         /// <param name="settings"></param>
         public TabularForm(FormSettings settings)
         {
+            ArgumentNullException.ThrowIfNull(settings);
             Settings = settings;
         }
 
@@ -42,9 +44,11 @@ namespace FormPublisher
         /// <returns></returns>
         public byte[] Publish()
         {
+            var itemFields = GetValidatedItemFields();
+            ValidatePublishState(itemFields.Count);
+
             // Get property information of this form and of the form's items.
             var fields = this.GetFormFields();
-            var itemFields = Items.GetFormFields();
 
             // Get first page items
             var page1Items = itemFields.Take(Settings.FirstPageRowCount);
@@ -92,13 +96,16 @@ namespace FormPublisher
 
         private byte[] CreateForm(IEnumerable<FormField> fields, IEnumerable<DataLine> dataLines, int sheetNumber, int numberOfSheets, bool firstPass)
         {
+            var templatePath = firstPass ? Settings.FirstPageFilePath : Settings.ContinuationPageFilePath;
+
             using (var ms = new MemoryStream())
             {
-                using (var reader = new PdfReader(firstPass ? Settings.FirstPageFilePath : Settings.ContinuationPageFilePath))
+                using (var reader = new PdfReader(templatePath))
                 {
                     using (var document = new PdfDocument(reader, new PdfWriter(ms)))
                     {
-                        var acroForm = PdfAcroForm.GetAcroForm(document, false);
+                        var acroForm = PdfAcroForm.GetAcroForm(document, false)
+                            ?? throw new InvalidOperationException($"The PDF template '{templatePath}' does not contain an AcroForm.");
 
                         // iterate of form fields
                         foreach (var field in fields.Where(f => firstPass || (firstPass == f.IsInitial)))
@@ -155,6 +162,59 @@ namespace FormPublisher
                 }
 
                 return ms.ToArray();
+            }
+        }
+
+        private List<DataLine> GetValidatedItemFields()
+        {
+            if (Items is null)
+            {
+                throw new InvalidOperationException("Items must be set before publishing.");
+            }
+
+            return Items.GetFormFields().ToList();
+        }
+
+        private void ValidatePublishState(int itemCount)
+        {
+            if (Settings is null)
+            {
+                throw new InvalidOperationException("Settings must be set before publishing.");
+            }
+
+            if (Settings.FirstPageRowCount < 0)
+            {
+                throw new InvalidOperationException("Settings.FirstPageRowCount cannot be negative.");
+            }
+
+            if (Settings.ContinuationPageRowCount < 0)
+            {
+                throw new InvalidOperationException("Settings.ContinuationPageRowCount cannot be negative.");
+            }
+
+            ValidateTemplatePath(Settings.FirstPageFilePath, nameof(Settings.FirstPageFilePath));
+
+            if (itemCount > Settings.FirstPageRowCount)
+            {
+                if (Settings.ContinuationPageRowCount <= 0)
+                {
+                    throw new InvalidOperationException("Settings.ContinuationPageRowCount must be greater than zero when items exceed the first-page row count.");
+                }
+
+                ValidateTemplatePath(Settings.ContinuationPageFilePath, nameof(Settings.ContinuationPageFilePath));
+            }
+        }
+
+        private static void ValidateTemplatePath(string filePath, string propertyName)
+        {
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new InvalidOperationException($"{propertyName} must be set before publishing.");
+            }
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"The PDF template '{filePath}' was not found.", filePath);
             }
         }
 
