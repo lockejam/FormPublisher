@@ -35,7 +35,7 @@ namespace FormPublisher
         /// List of tabular data
         /// </summary>
         [FormField(false)]
-        public IEnumerable<IDataLine> Items { get; set; }
+        public IEnumerable<IDataLine>? Items { get; set; }
 
         /// <summary>
         /// Method that reads model fields and iterates over those properties to assign 
@@ -120,12 +120,9 @@ namespace FormPublisher
                                 field.Value = sheetNumber;
                             }
 
-                            if (!string.IsNullOrEmpty(field.SheetSum))
+                            if (field.SheetSum is string sheetSumFieldName && sheetSumFieldName.Length > 0)
                             {
-                                field.Value = dataLines.SelectMany(line => line.FormFields)
-                                                       .Where(f => f.Name == field.SheetSum && f.Value != null)
-                                                       .Select(f => (decimal)f.Value)
-                                                       .Sum();
+                                field.Value = CalculateSheetSum(dataLines, sheetSumFieldName);
                             }
 
                             field.SetField(acroForm);
@@ -205,7 +202,29 @@ namespace FormPublisher
             }
         }
 
-        private static void ValidateTemplatePath(string filePath, string propertyName)
+        private static decimal CalculateSheetSum(IEnumerable<DataLine> dataLines, string sheetSumFieldName)
+        {
+            decimal total = 0;
+
+            foreach (var formField in dataLines.SelectMany(line => line.FormFields).Where(f => f.Name == sheetSumFieldName))
+            {
+                if (formField.Value is null)
+                {
+                    continue;
+                }
+
+                if (formField.Value is not decimal value)
+                {
+                    throw new InvalidOperationException($"SheetSum field '{sheetSumFieldName}' must contain decimal values.");
+                }
+
+                total += value;
+            }
+
+            return total;
+        }
+
+        private static void ValidateTemplatePath(string? filePath, string propertyName)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {

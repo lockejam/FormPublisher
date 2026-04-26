@@ -15,6 +15,6 @@ namespace FormPublisher
         /// <summary>
         /// Collection of field objects.
         /// </summary>
-        public IEnumerable<FormField> FormFields { get; set; }
+        public IEnumerable<FormField> FormFields { get; set; } = [];
     }
 }

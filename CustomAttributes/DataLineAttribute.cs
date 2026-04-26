@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FormPublisher.CustomAttributes
 {
@@ -20,7 +18,7 @@ namespace FormPublisher.CustomAttributes
         /// <summary>
         /// Name of the IDataLine field that should be used to quantify this fields.
         /// </summary>
-        public string SheetSum { get; set; }
+        public string? SheetSum { get; set; }
 
         /// <summary>
         /// The line number for an item.  This is calculated when the publisher iterates over items.

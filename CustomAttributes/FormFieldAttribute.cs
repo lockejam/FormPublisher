@@ -22,12 +22,12 @@ namespace FormPublisher.CustomAttributes
         /// <summary>
         /// The name of the field the property relates to if property name is different.
         /// </summary>
-        public string FieldName { get; set; }
+        public string? FieldName { get; set; }
 
         /// <summary>
         /// Format for string conversion.
         /// </summary>
-        public string DataFormat { get; set; }
+        public string? DataFormat { get; set; }
 
         /// <summary>
         /// Check whether property should be included in PDF output.
