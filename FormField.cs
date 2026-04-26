@@ -12,11 +12,11 @@ namespace FormPublisher
     /// </summary>
     internal class FormField
     {
-        public string Name { get; set; }
-        public object Value { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public object? Value { get; set; }
         public bool IsInitial { get; set; }
-        public string SheetSum { get; set; }
-        public string DataFormat { get; set; }
+        public string? SheetSum { get; set; }
+        public string? DataFormat { get; set; }
         public bool IsLineNumber { get; set; }
         public bool IsPageNumber { get; set; }
         public bool IsNumberOfPages { get; set; }

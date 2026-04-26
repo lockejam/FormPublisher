@@ -22,11 +22,11 @@ namespace FormPublisher
         /// <summary>
         /// File path of first page.
         /// </summary>
-        public string FirstPageFilePath { get; set; }
+        public string? FirstPageFilePath { get; set; }
 
         /// <summary>
         /// File path of continuation page.
         /// </summary>
-        public string ContinuationPageFilePath { get; set; }
+        public string? ContinuationPageFilePath { get; set; }
     }
 }
