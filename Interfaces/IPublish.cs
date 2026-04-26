@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+namespace FormPublisher.Interfaces;
 
-namespace FormPublisher.Interfaces
+/// <summary>
+/// Implement `Publish` method
+/// </summary>
+internal interface IPublish
 {
-    /// <summary>
-    /// Implement `Publish` method
-    /// </summary>
-    internal interface IPublish
-    {
-        byte[] Publish();
-
-    }
+    byte[] Publish();
 }

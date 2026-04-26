@@ -1,14 +1,13 @@
-﻿namespace FormPublisher.Interfaces
+namespace FormPublisher.Interfaces;
+
+/// <summary>
+/// Interface for tabular data to be read by PDF form.
+/// </summary>
+public interface IDataLine : IFormPublisher
 {
     /// <summary>
-    /// Interface for tubular data to be read by PDF form.
+    /// Skip the line count for this row.  Usually this might pertain to
+    /// separation lines or lines intentionally left blank.
     /// </summary>
-    public interface IDataLine : IFormPublisher
-    {
-        /// <summary>
-        /// Skip the line count for this row.  Usually this might pertain to 
-        /// separation lines or lines intentionally left blank.
-        /// </summary>
-        bool SkipLineNumber { get; set; }
-    }
+    bool SkipLineNumber { get; set; }
 }
