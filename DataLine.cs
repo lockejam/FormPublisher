@@ -1,20 +1,17 @@
-﻿using System.Collections.Generic;
+namespace FormPublisher;
 
-namespace FormPublisher
+/// <summary>
+/// Internal class that disseminates the individual model properties and their attributes into a collection.
+/// </summary>
+internal class DataLine
 {
     /// <summary>
-    /// Internal class that disseminates the inidividual model properties and it's attributes into a collection.
+    /// If true will not assign value to field and will not increase the line number.
     /// </summary>
-    internal class DataLine
-    {
-        /// <summary>
-        /// If true will not assign value to field and will not increase the line number.
-        /// </summary>
-        public bool SkipLineNumber { get; set; }
-        
-        /// <summary>
-        /// Collection of field objects.
-        /// </summary>
-        public IEnumerable<FormField> FormFields { get; set; } = [];
-    }
+    public bool SkipLineNumber { get; init; }
+
+    /// <summary>
+    /// Collection of field objects.
+    /// </summary>
+    public IReadOnlyList<FormField> FormFields { get; init; } = [];
 }

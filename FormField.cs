@@ -1,87 +1,86 @@
-﻿using iText.Forms;
+using iText.Forms;
 using iText.Forms.Fields;
 
-namespace FormPublisher
+namespace FormPublisher;
+
+/// <summary>
+/// Internal class that will break down property information to target and assign values to form fields.
+/// <see cref="CustomAttributes.FormFieldAttribute"></see>
+/// </summary>
+internal class FormField
 {
+    public required string Name { get; init; }
+    public object? Value { get; set; }
+    public bool IsInitial { get; init; }
+    public string? SheetSum { get; init; }
+    public string? DataFormat { get; init; }
+    public bool IsLineNumber { get; init; }
+    public bool IsPageNumber { get; init; }
+    public bool IsNumberOfPages { get; init; }
+
     /// <summary>
-    /// Internal class that will break down property information to target and assign values to form fields.
-    /// <see cref="CustomAttributes.FormFieldAttribute"></see>
+    /// Set field value to associated PdfAcroForm field.  For data fields the index parameter
+    /// is required in order to target correct field.
     /// </summary>
-    internal class FormField
+    /// <param name="acroForm"></param>
+    /// <param name="index"></param>
+    public void SetField(PdfAcroForm acroForm, int? index = null)
     {
-        public string Name { get; set; } = string.Empty;
-        public object? Value { get; set; }
-        public bool IsInitial { get; set; }
-        public string? SheetSum { get; set; }
-        public string? DataFormat { get; set; }
-        public bool IsLineNumber { get; set; }
-        public bool IsPageNumber { get; set; }
-        public bool IsNumberOfPages { get; set; }
+        ArgumentNullException.ThrowIfNull(acroForm);
 
-        /// <summary>
-        /// Set field value to associated PdfAcroForm field.  For data fields the index parameter 
-        /// is required in order to target correct field.
-        /// </summary>
-        /// <param name="acroForm"></param>
-        /// <param name="index"></param>
-        public void SetField(PdfAcroForm acroForm, int? index = null)
+        if (string.IsNullOrWhiteSpace(Name))
         {
-            ArgumentNullException.ThrowIfNull(acroForm);
-
-            if (string.IsNullOrWhiteSpace(Name))
-            {
-                throw new InvalidOperationException("Form field name must be set before assignment.");
-            }
-
-            var targetFieldName = GetTargetFieldName(index);
-            var acroField = acroForm.GetField(targetFieldName)
-                ?? throw new InvalidOperationException($"The PDF field '{targetFieldName}' was not found.");
-
-            if (Value is string[] selectedValues)
-            {
-                SetChoiceFieldValue(acroField, targetFieldName, selectedValues);
-                return;
-            }
-
-            if (!TryGetScalarFieldValue(out var fieldValue))
-            {
-                return;
-            }
-
-            acroField.SetValue(fieldValue);
+            throw new InvalidOperationException("Form field name must be set before assignment.");
         }
 
-        private string GetTargetFieldName(int? index)
+        var targetFieldName = GetTargetFieldName(index);
+        var acroField = acroForm.GetField(targetFieldName)
+            ?? throw new InvalidOperationException($"The PDF field '{targetFieldName}' was not found.");
+
+        if (Value is string[] selectedValues)
         {
-            return index is int value ? $"{Name}.{value}" : Name;
+            SetChoiceFieldValue(acroField, targetFieldName, selectedValues);
+            return;
         }
 
-        private bool TryGetScalarFieldValue(out string fieldValue)
+        if (!TryGetScalarFieldValue(out var fieldValue))
         {
-            if (Value is bool boolValue)
-            {
-                fieldValue = "On";
-                return boolValue;
-            }
+            return;
+        }
 
-            if (Value is IFormattable formattable)
-            {
-                fieldValue = formattable.ToString(DataFormat, null);
-                return true;
-            }
+        acroField.SetValue(fieldValue);
+    }
 
-            fieldValue = Value?.ToString() ?? string.Empty;
+    private string GetTargetFieldName(int? index)
+    {
+        return index is int value ? $"{Name}.{value}" : Name;
+    }
+
+    private bool TryGetScalarFieldValue(out string fieldValue)
+    {
+        if (Value is bool boolValue)
+        {
+            fieldValue = "On";
+            return boolValue;
+        }
+
+        if (Value is IFormattable formattable)
+        {
+            fieldValue = formattable.ToString(DataFormat, null);
             return true;
         }
 
-        private static void SetChoiceFieldValue(PdfFormField acroField, string targetFieldName, string[] selectedValues)
-        {
-            if (acroField is not PdfChoiceFormField choiceField)
-            {
-                throw new InvalidOperationException($"The PDF field '{targetFieldName}' must be a choice field when assigning list selections.");
-            }
+        fieldValue = Value?.ToString() ?? string.Empty;
+        return true;
+    }
 
-            choiceField.SetListSelected(selectedValues);
+    private static void SetChoiceFieldValue(PdfFormField acroField, string targetFieldName, string[] selectedValues)
+    {
+        if (acroField is not PdfChoiceFormField choiceField)
+        {
+            throw new InvalidOperationException($"The PDF field '{targetFieldName}' must be a choice field when assigning list selections.");
         }
+
+        choiceField.SetListSelected(selectedValues);
     }
 }
