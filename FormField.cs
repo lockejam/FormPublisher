@@ -1,8 +1,5 @@
 ﻿using iText.Forms;
 using iText.Forms.Fields;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace FormPublisher
 {
@@ -29,44 +26,62 @@ namespace FormPublisher
         /// <param name="index"></param>
         public void SetField(PdfAcroForm acroForm, int? index = null)
         {
+            ArgumentNullException.ThrowIfNull(acroForm);
 
-            if (index != null)
+            if (string.IsNullOrWhiteSpace(Name))
             {
-                Name += $".{index}";
+                throw new InvalidOperationException("Form field name must be set before assignment.");
             }
-            var acroField = acroForm.GetField(Name);
 
-            string fieldValue;
-            if (Value is DateTime)
+            var targetFieldName = GetTargetFieldName(index);
+            var acroField = acroForm.GetField(targetFieldName)
+                ?? throw new InvalidOperationException($"The PDF field '{targetFieldName}' was not found.");
+
+            if (Value is string[] selectedValues)
             {
-                fieldValue = ((DateTime)Value).ToString(DataFormat);
+                SetChoiceFieldValue(acroField, targetFieldName, selectedValues);
+                return;
             }
-            else if (Value is bool)
-            {
-                if (!(bool)Value)
-                {
-                    return;
-                }
 
+            if (!TryGetScalarFieldValue(out var fieldValue))
+            {
+                return;
+            }
+
+            acroField.SetValue(fieldValue);
+        }
+
+        private string GetTargetFieldName(int? index)
+        {
+            return index is int value ? $"{Name}.{value}" : Name;
+        }
+
+        private bool TryGetScalarFieldValue(out string fieldValue)
+        {
+            if (Value is bool boolValue)
+            {
                 fieldValue = "On";
-            }
-            else if (Value is decimal)
-            {
-                fieldValue = ((decimal)Value).ToString(DataFormat);
-            }
-            else
-            {
-                fieldValue = Value?.ToString() ?? "";
+                return boolValue;
             }
 
-            if (Value is string[])
+            if (Value is IFormattable formattable)
             {
-                ((PdfChoiceFormField)acroField).SetListSelected(new string[] { fieldValue });
+                fieldValue = formattable.ToString(DataFormat, null);
+                return true;
             }
-            else
+
+            fieldValue = Value?.ToString() ?? string.Empty;
+            return true;
+        }
+
+        private static void SetChoiceFieldValue(PdfFormField acroField, string targetFieldName, string[] selectedValues)
+        {
+            if (acroField is not PdfChoiceFormField choiceField)
             {
-                acroField.SetValue(fieldValue);
+                throw new InvalidOperationException($"The PDF field '{targetFieldName}' must be a choice field when assigning list selections.");
             }
+
+            choiceField.SetListSelected(selectedValues);
         }
     }
 }
