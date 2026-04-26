@@ -4,6 +4,8 @@ root = true
 csharp_prefer_simple_using_statement = false
 csharp_style_prefer_primary_constructors = false
 
+dotnet_diagnostic.IDE0063.severity = none
+
 dotnet_naming_rule.private_fields_should_be_prefixed_with_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_should_be_prefixed_with_underscore.style = private_field_underscore_prefix
 dotnet_naming_rule.private_fields_should_be_prefixed_with_underscore.severity = warning
