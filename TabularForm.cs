@@ -2,7 +2,6 @@ using FormPublisher.CustomAttributes;
 using FormPublisher.Interfaces;
 using iText.Forms;
 using iText.Kernel.Pdf;
-using iText.Kernel.Utils;
 
 namespace FormPublisher;
 
@@ -63,7 +62,7 @@ public class TabularForm : IFormPublisher, IPublish
         {
             using (var document = new PdfDocument(new PdfWriter(ms)))
             {
-                var merger = new PdfMerger(document);
+                var formCopier = new PdfPageFormCopier();
 
                 foreach (var chunk in chunks)
                 {
@@ -73,15 +72,13 @@ public class TabularForm : IFormPublisher, IPublish
                     {
                         using (var byteDoc = new PdfDocument(new PdfReader(byteStream)))
                         {
-                            merger.Merge(byteDoc, 1, byteDoc.GetNumberOfPages());
+                            byteDoc.CopyPagesTo(1, byteDoc.GetNumberOfPages(), document, formCopier);
                         }
                     }
 
                     firstPass = false;
                     sheetNumber++;
                 }
-
-                merger.Close();
             }
 
             return ms.ToArray();
