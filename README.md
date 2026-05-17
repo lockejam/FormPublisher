@@ -1,266 +1,314 @@
 # FormPublisher
 
-A project for writing to PDF files using a simple POCO as an interface.
+FormPublisher is a small, focused C# library that helps you fill out existing PDF forms.
 
-## Basics
+You start with a fillable PDF template, create a simple C# model with matching property names, and call `Publish()` to get the finished PDF as a `byte[]`. FormPublisher uses iText under the hood so you can handle common form-filling work without writing directly against the PDF library.
 
-### Form.cs
+## When To Use It
 
-Base class the model must inherit in order to be read by the form publisher.  
-This class provides a few essentials:  
+Use FormPublisher when you already have a fillable PDF and want code to populate its fields from application data. It is meant for form filling, not full PDF editing or designing new PDF documents from scratch.
 
-> `Property Name` | `Type`
+Good fits:
 
- - `FilePath` | `string`  
-    File path of the pdf document to produced.  
- - `Publish` | `Method()`  
-    Method that reads model fields and iterates over those properties to 
-    assign to form fields and returns form as byte array.  
-    >`return File(yourFormObject.Publish(), "application/pdf");`
+- generating a filled PDF from a web app
+- mapping a C# object to PDF field names
+- filling repeated table rows in a PDF
+- creating continuation pages when a table has more rows than one page can hold
 
+FormPublisher is still being modernized. The current code targets `.NET 10`.
 
-### TabularForm.cs
+## Add It To A Project
 
-Like [`Form.cs`](#form.cs) the model must inherit in order to be read by the form publisher but with added functionality specific to forms with 
-tabular data.  
-This class provides a few essentials:  
+FormPublisher is not a NuGet package yet. For now, reference the project directly:
 
-> `Property Name` | `Type`
+```xml
+<ProjectReference Include="..\path\to\FormPublisher.csproj" />
+```
 
- - `Settings` | `FormSettings`  
-    The details for the PDF file(s) to be read to.  More in the 
-    [`FormSettings`](#formsettings.cs) section.
- - `Items` | `IEnumerable<IDataLine>`  
-    List of tabular data.  More in the [`IDataLine`](#idataline.cs) section.
- - `Publish` | `Method()`  
-    Method that reads model fields and iterates over those properties to 
-    assign to form fields and returns form as byte array.  
-    >`return File(yourFormObject.Publish(), "application/pdf");`
+## Your First Form
 
-### FormSettings.cs
+Start with a fillable PDF template. The template might have fields named something like:
 
-PDF file information.
+```text
+Title
+REQUEST_ID
+RequestDate
+Category
+Expedited
+```
 
-> `Property Name` | `Type`
+Create a class that inherits from `Form`. Each public property is matched to a PDF field.
 
- - `FirstPageRowCount` | `int`  
-    Number of rows for tabular data in first page.
- - `ContinuationPageRowCount` | `int`  
-    Number of rows for tabular data on continuation page.  If first page
-    is to be reused for item overflow then first page will be used.
- - `FirstPageFilePath` | `string`  
-    File path of first page.
- - `ContinuationPageFilePath` | `string`  
-    File path of the continuation page in the case of tabular data.
-
-
-### IDataLine.cs
-
-Interface for tabular data to be read by the PDF Form. This is required 
-for tabular data that is assigned to the `Items` property for the `Form` 
-object. Requires the implementation of `SkipLineNumber` property.
-
-> `Property Name` | `Type` | default value 
-
- - `SkipLineNumber` | `bool` | false   
-    Skip the line count for this row.  Usually this might pertain to 
-    separation lines or lines intentionally left blank within your 
-    tabular data.  This will ignore assigning the line count to the 
-    property marked with the 
-    [`FormFieldAttribute`](#formfieldattribute) with the `IsLineNumber`
-    property set to `true`.  If there is no property marked as the line
-    number field then this property can be set to true.
-
-### FormFieldAttribute.cs
-
-Mark fields to be read by the PDF reader.  All fields are automatically 
-read but this allows for their specific roles to be attributed to each
-field or for the field to be excluded altogether.
-
-> `Property Name` | `Type` | default value 
-
- - `FieldName` | `string` | `null`  
-    The name of the field the property relates to if property name is 
-    different.  FieldName is case sensitive.  
-    ```csharp
-    [FormField(FieldName = "PDF_Field_Name")"
-    public string PropertyName {get; set;
-    ```  
- - `DataFormat` | `string` | `null`  
-    Format for string conversion
-    ```csharp
-    FormField(DataFormat = "yyyyMMdd")]
-    public DateTime? DATE_OF_ISSUE { get; set; }
-    ```  
- - `IncludeField` | `bool` | `true`  
-    Check whether property should be included in PDF output.  This is 
-    set during class constructor.
-    ```csharp
-    [FormField(false)]
-    public bool SkipLineNumber { get; set; }
-    ```  
-
-
-### DataLineAttribute.cs
-
-Mark DataLine fields or Form fields related to DataLine fields with attributes that require special treatment.
-
-> `Property Name` | `Type` | default value 
-
- - `IsInitial` | `bool` | `false`  
-    Set to `true` if the field only appears on the first page. Failing 
-    to do so may result in a `NullRefenceException`.
-    ```csharp
-    [FormField(IsInitial = true)]
-    public string HAND_RECEIPT_NUMBER { get; set; }
-    ```  
- - `SheetSum` | `string` | `null`  
-    Name of the [`IDataLine`](#idataline.cs) field that should be used to 
-    quantify this fields.
-    ```csharp
-    [FormField(SheetSum = "TOTAL_COST", DataFormat = "c")]
-    public bool SHEET_TOTAL { get; set; }
-    ```
-    When `Publish` is called the `Form.Items` will be divided up 
-    according to how many can fit on each sheet and `Sum` is called on 
-    the list of items.
-    **Important: type must be of type `decimal` for both fields!**  
- - `IsLineNumber` | `bool` | `false`  
-    The line number for an item if not assigned to manually.  This is 
-    calculated when the publisher iterates over items.   
-    ```csharp
-    [FormField(false)]
-    public bool SkipLineNumber { get; set; }
-    ```
- - `IsPageNumber` | `bool` | `false`  
-    Page Number.  This will be assigned for each page produced.
-    ```csharp
-    [FormField(IsPageNumber = true)]
-    public int PAGE_NUMBER { get; set; }
-    ```
- - `IsNumberOfPages` | `bool` | `false`  
-    Total number of pages.  The field marked will be assigned after 
-    publisher calculates the number of pages based on number of items
-    ```csharp
-    [FormField(IsNumberOfPages = true)]
-    public int NUMBER_OF_PAGES { get; set; }
-    ```
-
-## Simple Example 
-
-Below is an example of how to use the FormPublisher project.
-
-1. Build model that inherit from [`TabularForm`](#form.cs).
-2. Build model for tablular data that implements the
-   [`IDataLine`](#idataline.cs) `interface`.
-3. Pass in [`FormSettings`](#formsettings.cs`) to model.
-4. Assign fields.
-5. Call `Publish()`.
-
-### MyToyList.cs
 ```csharp
 using FormPublisher;
 using FormPublisher.CustomAttributes;
-using System;
 
-// We inherit from `TabularForm` and not `Form` because our object will contain a list of items.
-public class MyToyList : TabularForm
+public sealed class SupplyRequestForm : Form
 {
+    public SupplyRequestForm(string templatePath)
+        : base(templatePath)
+    {
+    }
 
-    public MyPdfFile(FormSettings settings) : base(settings) {}
+    public string Title { get; init; } = string.Empty;
 
-    // property name matches field in Pdf file
-    public string List_Name { get; set; }
+    [FormField(FieldName = "REQUEST_ID")]
+    public string RequestId { get; init; } = string.Empty;
 
-    // property name differs from field name in pdf file
-    [FormField(FieldName = "List_Version_NO")"
-    public int VersionNumber { get; set; }
+    [FormField(DataFormat = "yyyy-MM-dd")]
+    public DateTime RequestDate { get; init; }
 
-    // field is calculated per sheet and sums the "TOY_COST" fields of our Items
-    [DataLine(SheetSum = "TOY_COST")]
-    [FormField(DataFormat = "c")]
-    public bool SHEET_TOTAL { get; set; }
+    public string[] Category { get; init; } = [];
 
-    // `Items` is inherited
+    public bool Expedited { get; init; }
 
-    // `Publish` is inherited
+    [FormField(false)]
+    public string InternalNotes { get; init; } = string.Empty;
 }
 ```
 
-### MyToy.cs
+Then create the form and publish it:
+
 ```csharp
+var form = new SupplyRequestForm("templates/supply-request.pdf")
+{
+    Title = "Station Supply Request",
+    RequestId = "DS9-001",
+    RequestDate = new DateTime(2375, 5, 3),
+    Category = ["Operations", "Engineering", "Security"],
+    Expedited = true,
+    InternalNotes = "Not written to the PDF"
+};
+
+byte[] pdfBytes = form.Publish();
+```
+
+In this example, `Category` is a `string[]` because it represents a PDF choice field, such as a list box or dropdown. The PDF might offer choices like `Operations`, `Engineering`, `Medical`, and `Security`. For normal text fields, use `string`.
+
+`Expedited` is a `bool` because it represents a checkbox. When the value is `true`, FormPublisher uses the PDF field's checked value, such as `Yes` or `On`. When the value is `false`, it writes `Off`.
+
+That is the core idea: make a model, fill in its values, and publish the PDF.
+
+## How Field Matching Works
+
+FormPublisher uses property names by default.
+
+```csharp
+public string Title { get; init; } = string.Empty;
+```
+
+This looks for a PDF field named `Title`.
+
+If the PDF field has a different name, use `FieldName`:
+
+```csharp
+[FormField(FieldName = "REQUEST_ID")]
+public string RequestId { get; init; } = string.Empty;
+```
+
+If a value needs a specific format, use `DataFormat`:
+
+```csharp
+[FormField(DataFormat = "yyyy-MM-dd")]
+public DateTime RequestDate { get; init; }
+```
+
+If a property is useful in C# but should not be written to the PDF, exclude it:
+
+```csharp
+[FormField(false)]
+public string InternalNotes { get; init; } = string.Empty;
+```
+
+For checkbox fields, use a `bool`:
+
+```csharp
+public bool Expedited { get; init; }
+```
+
+## Forms With Rows
+
+Some PDFs have repeated row fields, like an inventory list or line-item table. Use `TabularForm` for those.
+
+The PDF template should name repeated row fields with zero-based suffixes:
+
+```text
+LineNumber.0
+Description.0
+Cost.0
+LineNumber.1
+Description.1
+Cost.1
+```
+
+Here is an example of `TabularForm`. Note that the `Title` field is marked with `[DataLine(IsInitial = true)]` because it only exists on the first-page template. That tells FormPublisher to skip `Title` on continuation pages instead of looking for a field that is not there.
+
+```csharp
+using FormPublisher;
 using FormPublisher.CustomAttributes;
 using FormPublisher.Interfaces;
-using System;
 
-public MyToy : IDataLine
+public sealed class InventoryForm : TabularForm
+{
+    public InventoryForm(FormSettings settings)
+        : base(settings)
+    {
+    }
+
+    [DataLine(IsInitial = true)]
+    public string Title { get; init; } = string.Empty;
+
+    [DataLine(SheetSum = nameof(InventoryLine.Cost))]
+    [FormField(DataFormat = "0.00")]
+    public decimal SheetTotal { get; init; }
+
+    [DataLine(IsPageNumber = true)]
+    public int PageNumber { get; init; }
+
+    [DataLine(IsNumberOfPages = true)]
+    public int NumberOfPages { get; init; }
+}
+
+public sealed class InventoryLine : IDataLine
 {
     [DataLine(IsLineNumber = true)]
-    public int? ITEM_NUMBER { get; set; }
-    
-    public string DESCRIPTION { get; set; }
+    public int? LineNumber { get; init; }
 
-    [FormField(DataFormat = "yyyyMMdd")]
-    public DateTime? PURCHASE_DATE { get; set; }
+    public string Description { get; init; } = string.Empty;
 
-    [FormField(DataFormat = "c")]
-    public decimal? TOY_COST { get; set; }
+    [FormField(DataFormat = "0.00")]
+    public decimal Cost { get; init; }
 
-    // must be implemented but doesn't appear in Pdf form
     [FormField(false)]
     public bool SkipLineNumber { get; set; }
 }
 ```
 
-### ExportController.cs
+Publish it like this:
+
 ```csharp
-public class FormController : Controller 
+var settings = new FormSettings
 {
-    public FileResult Export() 
-    {
-        // get file details
-        var formSettings = new FormSettings  
-        {
-            FirstPageRowCount = 14,
-            ContinuationPageRowCount = 18,
-            FirstPageFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"\Documents\toys.pdf"),
-            ContinuationPageFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"\Documents\toys_cont.pdf")
-        }
+    FirstPageFilePath = "templates/inventory-first.pdf",
+    ContinuationPageFilePath = "templates/inventory-continuation.pdf",
+    FirstPageRowCount = 14,
+    ContinuationPageRowCount = 18
+};
 
-        // create list of toys
-        var toys = new List<MyDataLine>
-        {
-            new MyToy 
-            { 
-                DESCRIPTION = "Teddy Bear",
-                PURCHASE_DATE = new DateTime(2008, 3, 1, 7, 0, 0),
-                TOY_COST = 12.99
-            },
-            new MyToy 
-            { 
-                DESCRIPTION = "Space Ship",
-                PURCHASE_DATE = new DateTime(2012, 6, 3, 8, 0, 0),
-                TOY_COST = 19.99
-            },
-            new MyToy 
-            { 
-                DESCRIPTION = "Race Car",
-                PURCHASE_DATE = new DateTime(2016, 11, 19, 4, 0, 0),
-                TOY_COST = 8.99
-            }
-        }
+var form = new InventoryForm(settings)
+{
+    Title = "Maintenance Supply List",
+    Items =
+    [
+        new InventoryLine { Description = "Self-sealing stem bolt", Cost = 1.25m },
+        new InventoryLine { Description = "Cargo bay spacer", Cost = 0.00m, SkipLineNumber = true },
+        new InventoryLine { Description = "Power coupling", Cost = 2.75m }
+    ]
+};
 
-        // create form object
-        var form = new MyToyList 
-        {
-            List_Name = "Toy Box",
-            VersionNumber = 2,
-            Items = toys
-        };
-        
-        // output pdf file 
-        return File(MyToyList.Publish(), "application/pdf");
-    }
-}
+byte[] pdfBytes = form.Publish();
+```
 
+If the rows do not fit on the first page of the PDF, FormPublisher uses the continuation-page PDF for the remaining rows. In other words, if your form has overflow pages and `ContinuationPageFilePath` is configured, FormPublisher fills those pages as needed. After publishing, fields are renamed with `_sheet(n)` suffixes so each generated page can keep its own values.
+
+## Roadmap
+
+FormPublisher is being modernized in small milestones. This README describes how the library works today.
+
+Planned follow-up work includes:
+
+- NuGet packaging and release readiness
+- advanced PDF workflow support, including better field diagnostics and template inspection
+- runnable example projects, including a basic form example and a DD Form 1149 tabular form example
+- signature support, followed by a DD Form 2875 signature workflow example
+
+## Reference
+
+### `Form`
+
+Use this for a PDF that can be filled from one model and one template file.
+
+- Pass the template path to the constructor.
+- Add public properties for PDF fields.
+- Call `Publish()` to get the completed PDF bytes.
+
+### `TabularForm`
+
+Use this for a PDF with repeated rows.
+
+- Pass a `FormSettings` object to the constructor.
+- Set `Items` to your row models.
+- Call `Publish()` to get the completed PDF bytes.
+
+### `FormSettings`
+
+`FormSettings` tells a tabular form where its templates are and how many rows fit on each page.
+
+| Property | What it means |
+| --- | --- |
+| `FirstPageFilePath` | Path to the first-page PDF template. |
+| `ContinuationPageFilePath` | Path to the continuation-page PDF template. Required when rows overflow the first page. |
+| `FirstPageRowCount` | Number of rows available on the first page. |
+| `ContinuationPageRowCount` | Number of rows available on each continuation page. Must be greater than zero when rows overflow the first page. |
+
+### `IDataLine`
+
+Use `IDataLine` for each row in a tabular form.
+
+| Property | What it means |
+| --- | --- |
+| `SkipLineNumber` | When `true`, the row does not receive a generated line number and does not advance the line count. This affects the property marked with `[DataLine(IsLineNumber = true)]`. |
+
+### `FormFieldAttribute`
+
+Use `[FormField]` when a property needs special handling.
+
+| Option | What it does |
+| --- | --- |
+| `FieldName` | Maps a property to a PDF field with a different name. |
+| `DataFormat` | Formats values such as dates and decimals before writing them. |
+| `false` | Excludes the property from PDF output. |
+
+Most values can be simple strings, numbers, dates, or decimals. Use `DataFormat` when you want a specific date or number format. Use `string[]` only for PDF choice fields, such as list boxes or combo boxes. For checkbox fields, use `bool`; FormPublisher uses the PDF field's checked value for `true` and writes `Off` for `false`.
+
+### `DataLineAttribute`
+
+Use `[DataLine]` for tabular behavior.
+
+| Option | What it does |
+| --- | --- |
+| `IsInitial` | Writes the field only on the first page. |
+| `SheetSum` | Sums a decimal row field for each generated page. Use the target PDF field name if the row property uses `FieldName`. |
+| `IsLineNumber` | Writes the generated row number. |
+| `IsPageNumber` | Writes the current page number. |
+| `IsNumberOfPages` | Writes the total page count. |
+
+## Common Errors
+
+FormPublisher tries to fail with clear messages when something is wrong. These are good places to start when publishing does not work.
+
+| Problem | Why it happens | What to try |
+| --- | --- | --- |
+| The template path is blank. | A `Form` was created with `null`, an empty string, or whitespace for the template path. | Check the path passed to the form constructor. Make sure configuration values are loaded before creating the form. |
+| The template file does not exist. | The path points to a file that cannot be found from the running app. | Use an absolute path while debugging, or log the final path before calling `Publish()`. Check that the PDF is copied to the expected output folder. |
+| The PDF is not a fillable form. | The PDF does not contain AcroForm fields. A scanned PDF or flat PDF usually has no fields to fill. | Open the PDF in a PDF editor and confirm that the fields are real fillable form fields. |
+| A PDF field name does not match your model. | By default, FormPublisher looks for a PDF field with the same name as the C# property. | Check the field name in the PDF. If it differs from the property name, add `[FormField(FieldName = "PDF_FIELD_NAME")]`. |
+| A `string[]` value fails during publishing. | `string[]` is only supported for PDF choice fields, such as list boxes or combo boxes. | Use `string` for regular text fields. Use `string[]` only when the target PDF field is a choice field. |
+| A checkbox value fails during publishing. | The PDF field may not be a checkbox, or it may not define a checked state. | Confirm that the target field is a checkbox. If the PDF uses unusual field setup, inspect the field's appearance states. |
+| A tabular form has no `Items`. | `TabularForm.Publish()` needs row data, even if there is only one row. | Set `Items` before calling `Publish()`. If there are no real rows, pass an empty list only after confirming that empty output is what you want. |
+| Rows overflow the first page, but continuation settings are missing. | More rows were provided than `FirstPageRowCount`, so FormPublisher needs a continuation template. | Set `ContinuationPageFilePath` and make sure `ContinuationPageRowCount` is greater than zero. |
+| A first-page field is missing on continuation pages. | The field exists only on the first-page template but was not marked as first-page-only. | Add `[DataLine(IsInitial = true)]` to that form property. Future versions may infer this automatically. |
+| `SheetSum` points to a value that is not a decimal. | Sheet totals currently add decimal row values. | Make sure the row property named by `SheetSum` is a `decimal`. If the row field uses `FieldName`, use the target PDF field name in `SheetSum`. |
+
+## Dependency And Licensing Notes
+
+FormPublisher currently uses iText 9.6.0 for PDF form reading, field assignment, and PDF merging. iText is dual-licensed under AGPLv3 and commercial terms, so review the dependency licensing notes before using this library in closed-source or commercial applications.
+
+For more detail, see [docs/dependencies.md](docs/dependencies.md).
+
+## Build And Test
+
+```powershell
+dotnet build
+dotnet test
 ```
