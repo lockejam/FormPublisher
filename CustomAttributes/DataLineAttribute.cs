@@ -1,36 +1,41 @@
 namespace FormPublisher.CustomAttributes;
 
 /// <summary>
-/// Mark DataLine fields or Form fields related to DataLine fields with attributes that require special treatment.
+/// Adds row and page behavior to a form or row property.
 /// </summary>
+/// <remarks>
+/// Use this attribute when a value should be calculated by FormPublisher, summed across
+/// rows, or written only on the first page of a tabular form.
+/// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
 public class DataLineAttribute : Attribute
 {
-
     /// <summary>
-    /// Set to <code>true</code> if the field only appears on the first page.
-    /// Failing to do so may result in a NullReferenceException.
+    /// Whether the field exists only on the first page template.
     /// </summary>
+    /// <remarks>
+    /// Set this to <see langword="true"/> for first-page-only fields so continuation pages
+    /// do not try to write to a PDF field that is not present.
+    /// </remarks>
     public bool IsInitial { get; set; }
 
     /// <summary>
-    /// Name of the IDataLine field that should be used to quantify these fields.
+    /// The row property name whose decimal values should be totaled for this field.
     /// </summary>
     public string? SheetSum { get; set; }
 
     /// <summary>
-    /// The line number for an item.  This is calculated when the publisher iterates over items.
+    /// Whether FormPublisher should write the current row number to this field.
     /// </summary>
     public bool IsLineNumber { get; set; }
 
     /// <summary>
-    /// Page Number.  This will be assigned for each page produced.
+    /// Whether FormPublisher should write the current page number to this field.
     /// </summary>
     public bool IsPageNumber { get; set; }
 
     /// <summary>
-    /// Total number of pages.  The field marked will be assigned after publisher calculates the
-    /// number of pages based on number of items.
+    /// Whether FormPublisher should write the total number of generated pages to this field.
     /// </summary>
     public bool IsNumberOfPages { get; set; }
 }
