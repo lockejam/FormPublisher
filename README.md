@@ -309,6 +309,9 @@ For more detail, see [docs/dependencies.md](docs/dependencies.md).
 ## Build And Test
 
 ```powershell
-dotnet build
-dotnet test
+dotnet restore FormPublisher.slnx
+dotnet build FormPublisher.slnx
+dotnet test FormPublisher.slnx
 ```
+
+The tests create small PDF templates at runtime, so no local PDF assets are required. For more detail, see [docs/testing.md](docs/testing.md).
