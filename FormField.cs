@@ -9,6 +9,8 @@ namespace FormPublisher;
 /// </summary>
 internal class FormField
 {
+    private const string CheckboxOffState = "Off";
+
     public required string Name { get; init; }
     public object? Value { get; set; }
     public bool IsInitial { get; init; }
@@ -36,6 +38,11 @@ internal class FormField
         var targetFieldName = GetTargetFieldName(index);
         var acroField = acroForm.GetField(targetFieldName)
             ?? throw new InvalidOperationException($"The PDF field '{targetFieldName}' was not found.");
+
+        if (Value is bool boolValue && TrySetCheckboxValue(acroField, targetFieldName, boolValue))
+        {
+            return;
+        }
 
         if (Value is string[] selectedValues)
         {
@@ -82,5 +89,28 @@ internal class FormField
         }
 
         choiceField.SetListSelected(selectedValues);
+    }
+
+    private static bool TrySetCheckboxValue(PdfFormField acroField, string targetFieldName, bool value)
+    {
+        if (acroField is not PdfButtonFormField buttonField
+            || buttonField.IsRadio()
+            || buttonField.IsPushButton())
+        {
+            return false;
+        }
+
+        acroField.SetValue(value ? GetCheckedValue(acroField, targetFieldName) : CheckboxOffState);
+        return true;
+    }
+
+    private static string GetCheckedValue(PdfFormField acroField, string targetFieldName)
+    {
+        var checkedValue = acroField.GetAppearanceStates()
+                                    .FirstOrDefault(state => !string.Equals(state, CheckboxOffState, StringComparison.Ordinal));
+
+        return string.IsNullOrWhiteSpace(checkedValue)
+            ? throw new InvalidOperationException($"The PDF checkbox field '{targetFieldName}' does not define a checked state.")
+            : checkedValue;
     }
 }

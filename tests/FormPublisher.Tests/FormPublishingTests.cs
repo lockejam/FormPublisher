@@ -22,4 +22,23 @@ public sealed class FormPublishingTests
         Assert.Equal("2026-05-03", fields["Date"]);
         Assert.Equal("Blue", fields["Choice"]);
     }
+
+    [Fact]
+    public void Publish_maps_bool_values_to_checkbox_states()
+    {
+        var templatePath = TestPdfTemplates.CreateCheckboxTemplate();
+        var form = new CheckboxFormModel(templatePath)
+        {
+            DefaultChecked = true,
+            CustomChecked = true,
+            DefaultUnchecked = false
+        };
+
+        var pdfBytes = form.Publish();
+
+        var fields = TestPdfTemplates.ReadFieldValues(pdfBytes);
+        Assert.Equal("Yes", fields["DefaultChecked"]);
+        Assert.Equal("On", fields["CustomChecked"]);
+        Assert.Equal("Off", fields["DefaultUnchecked"]);
+    }
 }
