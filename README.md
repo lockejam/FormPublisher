@@ -25,6 +25,8 @@ FormPublisher is not a NuGet package yet. For now, reference the project directl
 <ProjectReference Include="..\path\to\FormPublisher.csproj" />
 ```
 
+The project may be renamed to `PdfFormPublisher` before the first NuGet package is published.
+
 ## Your First Form
 
 Start with a fillable PDF template. The template might have fields named something like:
@@ -302,9 +304,19 @@ FormPublisher tries to fail with clear messages when something is wrong. These a
 
 ## Dependency And Licensing Notes
 
+FormPublisher is licensed under the GNU Affero General Public License v3.0. See [LICENSE](LICENSE).
+
 FormPublisher currently uses iText 9.6.0 for PDF form reading, field assignment, and PDF merging. iText is dual-licensed under AGPLv3 and commercial terms, so review the dependency licensing notes before using this library in closed-source or commercial applications.
 
 For more detail, see [docs/dependencies.md](docs/dependencies.md).
+
+## Contributing And Security
+
+This project is still early and is not packaged on NuGet yet. See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, test commands, and style expectations.
+
+Please do not open public issues for suspected security vulnerabilities. See [SECURITY.md](SECURITY.md) for reporting guidance.
+
+Public-readiness tracking is documented in [docs/public-readiness.md](docs/public-readiness.md).
 
 ## Build And Test
 
