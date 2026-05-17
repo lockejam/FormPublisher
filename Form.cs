@@ -6,14 +6,20 @@ using iText.Kernel.Pdf;
 namespace FormPublisher;
 
 /// <summary>
-/// Base class for models to inherit to enable the model to be read by the form publisher.
+/// Base class for filling one existing fillable PDF form from a C# model.
 /// </summary>
+/// <remarks>
+/// Inherit from this class and add public properties whose names match the PDF field names.
+/// Use <see cref="CustomAttributes.FormFieldAttribute"/> when a property needs a different
+/// PDF field name, a display format, or should be ignored.
+/// </remarks>
 public class Form : IFormPublisher, IPublish
 {
     /// <summary>
-    /// Pass in FormSettings object with PDF file details and location.
+    /// Creates a form model for the PDF template at the supplied file path.
     /// </summary>
-    /// <param name="filePath"></param>
+    /// <param name="filePath">The path to the existing PDF form template.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is blank.</exception>
     public Form(string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
@@ -21,16 +27,19 @@ public class Form : IFormPublisher, IPublish
     }
 
     /// <summary>
-    /// PDF file details and location object passed during class construction.
+    /// The path to the existing PDF form template used by this model.
     /// </summary>
     [FormField(false)]
     public string FilePath { get; protected set; }
 
     /// <summary>
-    /// Method that reads model fields and iterates over those properties to assign
-    /// to form fields and returns form as byte array.
+    /// Fills the PDF template with this model's public property values.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The filled PDF as a byte array.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the template path is missing or the PDF does not contain an AcroForm.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">Thrown when the PDF template file does not exist.</exception>
     public byte[] Publish()
     {
         var filePath = ValidateTemplatePath();

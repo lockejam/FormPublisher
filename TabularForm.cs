@@ -6,14 +6,20 @@ using iText.Kernel.Pdf;
 namespace FormPublisher;
 
 /// <summary>
-/// Base class for models to inherit to enable the model to be read by the form publisher for tabular data.
+/// Base class for filling existing PDF forms that contain repeating rows.
 /// </summary>
+/// <remarks>
+/// Inherit from this class for forms that have a first-page template and optional continuation
+/// pages. Put row data in <see cref="Items"/> and configure row counts and template paths with
+/// <see cref="FormSettings"/>.
+/// </remarks>
 public class TabularForm : IFormPublisher, IPublish
 {
     /// <summary>
-    /// Pass in FormSettings object with PDF file details and location.
+    /// Creates a tabular form model with the PDF template and row settings to use.
     /// </summary>
-    /// <param name="settings"></param>
+    /// <param name="settings">The template paths and row counts used while publishing.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is null.</exception>
     public TabularForm(FormSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
@@ -21,22 +27,29 @@ public class TabularForm : IFormPublisher, IPublish
     }
 
     /// <summary>
-    /// PDF file details and location object passed during class construction.
+    /// The template paths and row counts used while publishing.
     /// </summary>
     [FormField(false)]
     public FormSettings Settings { get; protected set; }
 
     /// <summary>
-    /// List of tabular data
+    /// The rows that should be written to the PDF form.
     /// </summary>
+    /// <remarks>
+    /// Each item represents one row. The item's public properties are matched to row field names
+    /// in the PDF, such as <c>Description.0</c>, <c>Description.1</c>, and so on.
+    /// </remarks>
     [FormField(false)]
     public IEnumerable<IDataLine>? Items { get; set; }
 
     /// <summary>
-    /// Method that reads model fields and iterates over those properties to assign
-    /// to form fields and returns form as byte array.
+    /// Fills the configured PDF templates with the model values and row data.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>The filled PDF as a byte array.</returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when required settings are missing, row counts are invalid, or a template does not contain an AcroForm.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">Thrown when a required PDF template file does not exist.</exception>
     public byte[] Publish()
     {
         var itemFields = GetValidatedItemFields();

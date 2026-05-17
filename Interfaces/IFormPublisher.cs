@@ -1,8 +1,12 @@
 namespace FormPublisher.Interfaces;
 
 /// <summary>
-/// Interface for the FormPublisher to read a model to PDF reader.
+/// Marks a model whose public properties can be read by FormPublisher.
 /// </summary>
+/// <remarks>
+/// Most users get this interface automatically by inheriting from <see cref="Form"/> or
+/// <see cref="TabularForm"/>. Row models implement it through <see cref="IDataLine"/>.
+/// </remarks>
 public interface IFormPublisher
 {
 }
