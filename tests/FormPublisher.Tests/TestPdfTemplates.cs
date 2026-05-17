@@ -14,6 +14,20 @@ internal static class TestPdfTemplates
         return CreateTemplate("simple", ["Title", "RENAMED", "Date"], choiceFields: ["Choice"]);
     }
 
+    public static string CreateCheckboxTemplate()
+    {
+        return CreateTemplate(
+            "checkbox",
+            textFields: [],
+            choiceFields: [],
+            checkboxFields:
+            [
+                new CheckboxField("DefaultChecked"),
+                new CheckboxField("CustomChecked", "On"),
+                new CheckboxField("DefaultUnchecked")
+            ]);
+    }
+
     public static string CreateTabularTemplate(string name, int rowCount, bool includeInitialFields)
     {
         var fields = new List<string>
@@ -58,6 +72,15 @@ internal static class TestPdfTemplates
 
     private static string CreateTemplate(string name, IEnumerable<string> textFields, IEnumerable<string> choiceFields)
     {
+        return CreateTemplate(name, textFields, choiceFields, checkboxFields: []);
+    }
+
+    private static string CreateTemplate(
+        string name,
+        IEnumerable<string> textFields,
+        IEnumerable<string> choiceFields,
+        IEnumerable<CheckboxField> checkboxFields)
+    {
         var filePath = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"{name}-{Guid.NewGuid():N}.pdf");
 
         using (var writer = new PdfWriter(filePath))
@@ -77,6 +100,12 @@ internal static class TestPdfTemplates
                 foreach (var fieldName in choiceFields)
                 {
                     acroForm.AddField(CreateChoiceField(document, page, fieldName, fieldIndex), page);
+                    fieldIndex++;
+                }
+
+                foreach (var field in checkboxFields)
+                {
+                    acroForm.AddField(CreateCheckboxField(document, page, field.Name, fieldIndex, field.CheckedValue), page);
                     fieldIndex++;
                 }
             }
@@ -102,10 +131,27 @@ internal static class TestPdfTemplates
             .CreateComboBox();
     }
 
+    private static PdfButtonFormField CreateCheckboxField(PdfDocument document, PdfPage page, string fieldName, int index, string? checkedValue)
+    {
+        var field = new CheckBoxFormFieldBuilder(document, fieldName)
+            .SetWidgetRectangle(CreateFieldRectangle(index))
+            .SetPage(page)
+            .CreateCheckBox();
+
+        if (!string.IsNullOrWhiteSpace(checkedValue))
+        {
+            field.GetFirstFormAnnotation().SetCheckBoxAppearanceOnStateName(checkedValue);
+        }
+
+        return field;
+    }
+
     private static Rectangle CreateFieldRectangle(int index)
     {
         return new Rectangle(36, 760 - (index * 24), 200, 18);
     }
+
+    private sealed record CheckboxField(string Name, string? CheckedValue = null);
 }
 
 internal sealed class SimpleFormModel : Form
@@ -124,6 +170,20 @@ internal sealed class SimpleFormModel : Form
     public DateTime Date { get; init; }
 
     public string[] Choice { get; init; } = [];
+}
+
+internal sealed class CheckboxFormModel : Form
+{
+    public CheckboxFormModel(string filePath)
+        : base(filePath)
+    {
+    }
+
+    public bool DefaultChecked { get; init; }
+
+    public bool CustomChecked { get; init; }
+
+    public bool DefaultUnchecked { get; init; }
 }
 
 internal sealed class TestInventoryForm : TabularForm
