@@ -36,6 +36,12 @@ Package builds produce a NuGet package and a symbol package:
 
 The symbol package is intended for NuGet.org's symbol server and contains portable PDBs for consumer debugging.
 
+## CI Package Artifacts
+
+The GitHub Actions build restores, builds, tests, and packs the library in Release configuration.
+Package artifacts are written to `artifacts/packages` and uploaded as the
+`pdf-form-publisher-packages` workflow artifact.
+
 ## Versioning
 
 Use semantic versioning.
@@ -46,7 +52,6 @@ Use semantic versioning.
 
 ## Deferred
 
-- CI pack validation remains tracked separately under #19.
 - Release publishing automation remains tracked separately under #20.
 - Consumer package-install smoke testing remains tracked separately under #21.
 - Installation and upgrade guidance remains tracked separately under #22.

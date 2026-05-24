@@ -17,3 +17,4 @@ Refs #
 ## Testing
 
 - [ ] `dotnet test PdfFormPublisher.slnx`
+- [ ] `dotnet pack src\PdfFormPublisher\PdfFormPublisher.csproj --configuration Release --no-build`
