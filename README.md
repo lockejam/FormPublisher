@@ -26,6 +26,7 @@ PdfFormPublisher is not a NuGet package yet. For now, reference the project dire
 ```
 
 The intended NuGet package ID is `PdfFormPublisher`.
+Package metadata and versioning are documented in [docs/packaging.md](docs/packaging.md).
 
 ## Your First Form
 

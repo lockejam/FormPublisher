@@ -17,6 +17,7 @@ docs/
 The packageable library project lives at `src/PdfFormPublisher/PdfFormPublisher.csproj`.
 The xUnit test project lives at `tests/PdfFormPublisher.Tests/PdfFormPublisher.Tests.csproj`
 and references the library project directly.
+Package identity and versioning are documented in `docs/packaging.md`.
 
 ## Rationale
 
