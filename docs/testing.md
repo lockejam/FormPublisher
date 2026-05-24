@@ -8,7 +8,7 @@ dotnet build FormPublisher.slnx
 dotnet test FormPublisher.slnx
 ```
 
-The test project is `tests/FormPublisher.Tests`. It uses xUnit and creates small PDF templates at runtime, so the current test suite does not require checked-in PDF assets or local sample files.
+The library project is `src/FormPublisher`, and the test project is `tests/FormPublisher.Tests`. The tests use xUnit and create small PDF templates at runtime, so the current test suite does not require checked-in PDF assets or local sample files.
 
 ## What The Tests Cover
 
