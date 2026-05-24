@@ -1,9 +1,9 @@
-using FormPublisher.CustomAttributes;
-using FormPublisher.Interfaces;
+using PdfFormPublisher.Attributes;
+using PdfFormPublisher.Interfaces;
 using iText.Forms;
 using iText.Kernel.Pdf;
 
-namespace FormPublisher;
+namespace PdfFormPublisher;
 
 /// <summary>
 /// Base class for filling existing PDF forms that contain repeating rows.
@@ -13,7 +13,7 @@ namespace FormPublisher;
 /// pages. Put row data in <see cref="Items"/> and configure row counts and template paths with
 /// <see cref="FormSettings"/>.
 /// </remarks>
-public class TabularForm : IFormPublisher, IPublish
+public class TabularForm : IPdfFormPublisher, IPublish
 {
     /// <summary>
     /// Creates a tabular form model with the PDF template and row settings to use.

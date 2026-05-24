@@ -1,4 +1,4 @@
-namespace FormPublisher.CustomAttributes;
+namespace PdfFormPublisher.Attributes;
 
 /// <summary>
 /// Customizes how a model property maps to a PDF form field.

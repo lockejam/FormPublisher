@@ -16,4 +16,4 @@ Refs #
 
 ## Testing
 
-- [ ] `dotnet test FormPublisher.slnx`
+- [ ] `dotnet test PdfFormPublisher.slnx`

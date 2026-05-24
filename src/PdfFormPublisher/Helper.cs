@@ -1,8 +1,8 @@
-using FormPublisher.CustomAttributes;
-using FormPublisher.Interfaces;
+using PdfFormPublisher.Attributes;
+using PdfFormPublisher.Interfaces;
 using System.Reflection;
 
-namespace FormPublisher;
+namespace PdfFormPublisher;
 
 internal static class Helper
 {
@@ -11,7 +11,7 @@ internal static class Helper
     /// </summary>
     /// <param name="form"></param>
     /// <returns></returns>
-    public static IEnumerable<FormField> GetFormFields(this IFormPublisher form)
+    public static IEnumerable<FormField> GetFormFields(this IPdfFormPublisher form)
     {
         ArgumentNullException.ThrowIfNull(form);
 

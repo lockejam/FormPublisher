@@ -1,20 +1,20 @@
 # Contributing
 
-FormPublisher is still early and is not packaged on NuGet yet. Contributions should keep the project small, focused, and easy for newer C# developers to understand.
+PdfFormPublisher is still early and is not packaged on NuGet yet. Contributions should keep the project small, focused, and easy for newer C# developers to understand.
 
 ## Local Setup
 
 Use the solution file for build and test commands:
 
 ```powershell
-dotnet restore FormPublisher.slnx
-dotnet build FormPublisher.slnx
-dotnet test FormPublisher.slnx
+dotnet restore PdfFormPublisher.slnx
+dotnet build PdfFormPublisher.slnx
+dotnet test PdfFormPublisher.slnx
 ```
 
 The test project creates small PDF templates at runtime, so no external PDF test assets are required for the current test suite.
 
-The packageable library project lives under `src/FormPublisher`, and tests live under `tests/FormPublisher.Tests`.
+The packageable library project lives under `src/PdfFormPublisher`, and tests live under `tests/PdfFormPublisher.Tests`.
 
 ## Pull Requests
 

@@ -1,4 +1,4 @@
-namespace FormPublisher;
+namespace PdfFormPublisher;
 
 /// <summary>
 /// Defines the PDF templates and row counts used by a tabular form.

@@ -1,4 +1,4 @@
-namespace FormPublisher.Interfaces;
+namespace PdfFormPublisher.Interfaces;
 
 /// <summary>
 /// Implement `Publish` method

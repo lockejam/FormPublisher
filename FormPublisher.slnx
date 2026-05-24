@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="src/FormPublisher/FormPublisher.csproj" />
-  <Project Path="tests/FormPublisher.Tests/FormPublisher.Tests.csproj" />
-</Solution>

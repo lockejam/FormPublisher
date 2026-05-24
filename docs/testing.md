@@ -3,12 +3,12 @@
 Use the solution file when running tests locally.
 
 ```powershell
-dotnet restore FormPublisher.slnx
-dotnet build FormPublisher.slnx
-dotnet test FormPublisher.slnx
+dotnet restore PdfFormPublisher.slnx
+dotnet build PdfFormPublisher.slnx
+dotnet test PdfFormPublisher.slnx
 ```
 
-The library project is `src/FormPublisher`, and the test project is `tests/FormPublisher.Tests`. The tests use xUnit and create small PDF templates at runtime, so the current test suite does not require checked-in PDF assets or local sample files.
+The library project is `src/PdfFormPublisher`, and the test project is `tests/PdfFormPublisher.Tests`. The tests use xUnit and create small PDF templates at runtime, so the current test suite does not require checked-in PDF assets or local sample files.
 
 ## What The Tests Cover
 

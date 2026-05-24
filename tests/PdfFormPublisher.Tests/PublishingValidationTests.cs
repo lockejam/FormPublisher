@@ -1,4 +1,4 @@
-namespace FormPublisher.Tests;
+namespace PdfFormPublisher.Tests;
 
 public sealed class PublishingValidationTests
 {
