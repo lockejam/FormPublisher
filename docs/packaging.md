@@ -42,6 +42,18 @@ The GitHub Actions build restores, builds, tests, and packs the library in Relea
 Package artifacts are written to `artifacts/packages` and uploaded as the
 `pdf-form-publisher-packages` workflow artifact.
 
+## Consumer Smoke Test
+
+Run the package smoke test from the repository root:
+
+```powershell
+.\scripts\package-smoke-test.ps1
+```
+
+The smoke test packs `PdfFormPublisher`, restores a separate consumer console project
+from the local package output plus NuGet.org, and runs that project against a generated
+fillable PDF template.
+
 ## Versioning
 
 Use semantic versioning.
@@ -53,5 +65,4 @@ Use semantic versioning.
 ## Deferred
 
 - Release publishing automation remains tracked separately under #20.
-- Consumer package-install smoke testing remains tracked separately under #21.
 - Installation and upgrade guidance remains tracked separately under #22.
