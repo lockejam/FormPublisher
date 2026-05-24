@@ -2,18 +2,30 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <Authors>lockejam</Authors>
+    <Description>A small, focused C# library for filling existing PDF forms from model objects.</Description>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <PackageId>PdfFormPublisher</PackageId>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/lockejam/FormPublisher</PackageProjectUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>pdf;forms;pdf-forms;acroform;itext</PackageTags>
     <Nullable>enable</Nullable>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/lockejam/FormPublisher</RepositoryUrl>
     <RootNamespace>PdfFormPublisher</RootNamespace>
+    <VersionPrefix>0.1.0</VersionPrefix>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.6.0" />
     <PackageReference Include="itext" Version="9.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
