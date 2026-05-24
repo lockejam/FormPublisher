@@ -1,12 +1,15 @@
+# Pull Request
+
 ## Summary
 
 ## Issue
 
-Refs #
+Closes #
+<!-- Use `Refs #` instead when this is related or partial work that should not close the issue. -->
 
 ## Changes
 
-- 
+-
 
 ## Dependency Check
 
