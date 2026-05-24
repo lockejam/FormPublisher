@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - main
+      - m3-packaging-readiness
   pull_request:
     branches:
       - main
+      - m3-packaging-readiness
   workflow_dispatch:
 
 env:
@@ -15,7 +17,7 @@ env:
 
 jobs:
   build:
-    name: Build and test
+    name: Build, test, and pack
     runs-on: windows-latest
 
     steps:
@@ -35,3 +37,13 @@ jobs:
 
       - name: Test
         run: dotnet test PdfFormPublisher.slnx --configuration Release --no-build
+
+      - name: Pack
+        run: dotnet pack src/PdfFormPublisher/PdfFormPublisher.csproj --configuration Release --no-build --output artifacts/packages
+
+      - name: Upload package artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pdf-form-publisher-packages
+          path: artifacts/packages/*
+          if-no-files-found: error
