@@ -3,25 +3,35 @@
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <Authors>lockejam</Authors>
+    <DebugType>portable</DebugType>
     <Description>A small, focused C# library for filling existing PDF forms from model objects.</Description>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IncludeSymbols>true</IncludeSymbols>
     <PackageId>PdfFormPublisher</PackageId>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/lockejam/FormPublisher</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>pdf;forms;pdf-forms;acroform;itext</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <Nullable>enable</Nullable>
     <RepositoryType>git</RepositoryType>
     <RepositoryUrl>https://github.com/lockejam/FormPublisher</RepositoryUrl>
     <RootNamespace>PdfFormPublisher</RootNamespace>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <VersionPrefix>0.1.0</VersionPrefix>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="itext.bouncy-castle-adapter" Version="9.6.0" />
     <PackageReference Include="itext" Version="9.6.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="10.0.203" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
