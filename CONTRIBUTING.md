@@ -14,6 +14,8 @@ dotnet test FormPublisher.slnx
 
 The test project creates small PDF templates at runtime, so no external PDF test assets are required for the current test suite.
 
+The packageable library project lives under `src/FormPublisher`, and tests live under `tests/FormPublisher.Tests`.
+
 ## Pull Requests
 
 - Keep each PR focused on one issue or one small group of closely related issues.

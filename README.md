@@ -22,7 +22,7 @@ FormPublisher is still being modernized. The current code targets `.NET 10`.
 FormPublisher is not a NuGet package yet. For now, reference the project directly:
 
 ```xml
-<ProjectReference Include="..\path\to\FormPublisher.csproj" />
+<ProjectReference Include="..\path\to\FormPublisher\src\FormPublisher\FormPublisher.csproj" />
 ```
 
 The project may be renamed to `PdfFormPublisher` before the first NuGet package is published.
@@ -317,6 +317,7 @@ This project is still early and is not packaged on NuGet yet. See [CONTRIBUTING.
 Please do not open public issues for suspected security vulnerabilities. See [SECURITY.md](SECURITY.md) for reporting guidance.
 
 Public-readiness tracking is documented in [docs/public-readiness.md](docs/public-readiness.md).
+Repository layout decisions are documented in [docs/repository-layout.md](docs/repository-layout.md).
 
 ## Build And Test
 
