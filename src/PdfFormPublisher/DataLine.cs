@@ -1,4 +1,4 @@
-namespace FormPublisher;
+namespace PdfFormPublisher;
 
 /// <summary>
 /// Internal class that disseminates the individual model properties and their attributes into a collection.

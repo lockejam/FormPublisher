@@ -15,14 +15,14 @@ The repository can be made public after the M2.5 public-readiness PR is merged a
 - `CONTRIBUTING.md` explains local setup, test commands, PR expectations, and style notes.
 - GitHub Actions build/test validation is configured.
 - README states that the project is not packaged on NuGet yet.
-- README states that the project may be renamed before the first NuGet package.
+- README states that the intended NuGet package ID is `PdfFormPublisher`.
 - Repository description and topics are set in GitHub.
 - Tracked files were scanned for common secret names and generated artifact paths.
 
 ## Intentionally Deferred
 
 - NuGet packaging and release metadata stay in M3.
-- The project rename to `PdfFormPublisher` stays in M3 under #66.
+- NuGet release workflows and remaining release metadata stay in M3.
 - Remaining M2 test-foundation cleanup can be handled separately from public visibility.
 
 ## Final Visibility Step

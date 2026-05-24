@@ -5,8 +5,10 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
+    <PackageId>PdfFormPublisher</PackageId>
     <PackageLicenseExpression>AGPL-3.0-only</PackageLicenseExpression>
     <Nullable>enable</Nullable>
+    <RootNamespace>PdfFormPublisher</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

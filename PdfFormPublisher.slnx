@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/PdfFormPublisher/PdfFormPublisher.csproj" />
+  <Project Path="tests/PdfFormPublisher.Tests/PdfFormPublisher.Tests.csproj" />
+</Solution>

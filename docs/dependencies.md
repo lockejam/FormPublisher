@@ -4,7 +4,7 @@ This project currently depends on `itext` for PDF form reading, field assignment
 
 ## Repository license
 
-FormPublisher is licensed under the GNU Affero General Public License v3.0. See the root `LICENSE` file.
+PdfFormPublisher is licensed under the GNU Affero General Public License v3.0. See the root `LICENSE` file.
 
 The repository license does not remove the need to understand the licenses of its dependencies. The current implementation uses iText, which has its own AGPL/commercial licensing model.
 
@@ -17,14 +17,14 @@ The repository license does not remove the need to understand the licenses of it
 
 ## iText strategy
 
-`FormPublisher` currently uses `itext` `9.6.0` with `itext.bouncy-castle-adapter` `9.6.0`.
+`PdfFormPublisher` currently uses `itext` `9.6.0` with `itext.bouncy-castle-adapter` `9.6.0`.
 
 Before implementing signature support, review the active iText package line and confirm that the chosen version is still the right fit for:
 
 - visible signature placement
 - certificate-based digital signing
 - package maintenance status
-- any API changes that would affect `FormPublisher`
+- any API changes that would affect `PdfFormPublisher`
 
 ## Licensing note
 
@@ -33,9 +33,9 @@ iText uses a dual-licensing model:
 - AGPL for open-source use
 - commercial licensing for use cases that cannot comply with AGPL obligations
 
-That matters for `FormPublisher` because any application that uses this library also uses iText through it. Closed-source, internal business, or commercial applications should review whether they can comply with iText's AGPL terms or need a commercial iText license.
+That matters for `PdfFormPublisher` because any application that uses this library also uses iText through it. Closed-source, internal business, or commercial applications should review whether they can comply with iText's AGPL terms or need a commercial iText license.
 
-Before shipping NuGet packages or signature examples, confirm that the intended distribution model is compatible with FormPublisher's repository license and iText's license terms.
+Before shipping NuGet packages or signature examples, confirm that the intended distribution model is compatible with PdfFormPublisher's repository license and iText's license terms.
 
 References:
 

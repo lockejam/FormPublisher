@@ -1,19 +1,19 @@
-using FormPublisher.CustomAttributes;
-using FormPublisher.Interfaces;
+using PdfFormPublisher.Attributes;
+using PdfFormPublisher.Interfaces;
 using iText.Forms;
 using iText.Kernel.Pdf;
 
-namespace FormPublisher;
+namespace PdfFormPublisher;
 
 /// <summary>
 /// Base class for filling one existing fillable PDF form from a C# model.
 /// </summary>
 /// <remarks>
 /// Inherit from this class and add public properties whose names match the PDF field names.
-/// Use <see cref="CustomAttributes.FormFieldAttribute"/> when a property needs a different
+/// Use <see cref="Attributes.FormFieldAttribute"/> when a property needs a different
 /// PDF field name, a display format, or should be ignored.
 /// </remarks>
-public class Form : IFormPublisher, IPublish
+public class Form : IPdfFormPublisher, IPublish
 {
     /// <summary>
     /// Creates a form model for the PDF template at the supplied file path.

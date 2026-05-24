@@ -1,4 +1,4 @@
-namespace FormPublisher.Interfaces;
+namespace PdfFormPublisher.Interfaces;
 
 /// <summary>
 /// Represents one row of data in a tabular PDF form.
@@ -7,7 +7,7 @@ namespace FormPublisher.Interfaces;
 /// Implement this interface on row models used by <see cref="TabularForm.Items"/>.
 /// Public properties on the row model are matched to row fields in the PDF.
 /// </remarks>
-public interface IDataLine : IFormPublisher
+public interface IDataLine : IPdfFormPublisher
 {
     /// <summary>
     /// Whether this row should be skipped when line numbers are assigned.

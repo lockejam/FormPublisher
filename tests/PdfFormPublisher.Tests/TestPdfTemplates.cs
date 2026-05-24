@@ -1,11 +1,11 @@
-using FormPublisher.CustomAttributes;
-using FormPublisher.Interfaces;
+using PdfFormPublisher.Attributes;
+using PdfFormPublisher.Interfaces;
 using iText.Forms;
 using iText.Forms.Fields;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 
-namespace FormPublisher.Tests;
+namespace PdfFormPublisher.Tests;
 
 internal static class TestPdfTemplates
 {

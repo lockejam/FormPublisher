@@ -1,10 +1,10 @@
-namespace FormPublisher.CustomAttributes;
+namespace PdfFormPublisher.Attributes;
 
 /// <summary>
 /// Adds row and page behavior to a form or row property.
 /// </summary>
 /// <remarks>
-/// Use this attribute when a value should be calculated by FormPublisher, summed across
+/// Use this attribute when a value should be calculated by PdfFormPublisher, summed across
 /// rows, or written only on the first page of a tabular form.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property)]
@@ -25,17 +25,17 @@ public class DataLineAttribute : Attribute
     public string? SheetSum { get; set; }
 
     /// <summary>
-    /// Whether FormPublisher should write the current row number to this field.
+    /// Whether PdfFormPublisher should write the current row number to this field.
     /// </summary>
     public bool IsLineNumber { get; set; }
 
     /// <summary>
-    /// Whether FormPublisher should write the current page number to this field.
+    /// Whether PdfFormPublisher should write the current page number to this field.
     /// </summary>
     public bool IsPageNumber { get; set; }
 
     /// <summary>
-    /// Whether FormPublisher should write the total number of generated pages to this field.
+    /// Whether PdfFormPublisher should write the total number of generated pages to this field.
     /// </summary>
     public bool IsNumberOfPages { get; set; }
 }

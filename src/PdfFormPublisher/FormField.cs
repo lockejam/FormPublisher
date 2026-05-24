@@ -1,11 +1,11 @@
 using iText.Forms;
 using iText.Forms.Fields;
 
-namespace FormPublisher;
+namespace PdfFormPublisher;
 
 /// <summary>
 /// Internal class that will break down property information to target and assign values to form fields.
-/// <see cref="CustomAttributes.FormFieldAttribute"></see>
+/// <see cref="Attributes.FormFieldAttribute"></see>
 /// </summary>
 internal class FormField
 {

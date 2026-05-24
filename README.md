@@ -1,12 +1,12 @@
-# FormPublisher
+# PdfFormPublisher
 
-FormPublisher is a small, focused C# library that helps you fill out existing PDF forms.
+PdfFormPublisher is a small, focused C# library that helps you fill out existing PDF forms.
 
-You start with a fillable PDF template, create a simple C# model with matching property names, and call `Publish()` to get the finished PDF as a `byte[]`. FormPublisher uses iText under the hood so you can handle common form-filling work without writing directly against the PDF library.
+You start with a fillable PDF template, create a simple C# model with matching property names, and call `Publish()` to get the finished PDF as a `byte[]`. PdfFormPublisher uses iText under the hood so you can handle common form-filling work without writing directly against the PDF library.
 
 ## When To Use It
 
-Use FormPublisher when you already have a fillable PDF and want code to populate its fields from application data. It is meant for form filling, not full PDF editing or designing new PDF documents from scratch.
+Use PdfFormPublisher when you already have a fillable PDF and want code to populate its fields from application data. It is meant for form filling, not full PDF editing or designing new PDF documents from scratch.
 
 Good fits:
 
@@ -15,17 +15,17 @@ Good fits:
 - filling repeated table rows in a PDF
 - creating continuation pages when a table has more rows than one page can hold
 
-FormPublisher is still being modernized. The current code targets `.NET 10`.
+PdfFormPublisher is still being modernized. The current code targets `.NET 10`.
 
 ## Add It To A Project
 
-FormPublisher is not a NuGet package yet. For now, reference the project directly:
+PdfFormPublisher is not a NuGet package yet. For now, reference the project directly:
 
 ```xml
-<ProjectReference Include="..\path\to\FormPublisher\src\FormPublisher\FormPublisher.csproj" />
+<ProjectReference Include="..\path\to\src\PdfFormPublisher\PdfFormPublisher.csproj" />
 ```
 
-The project may be renamed to `PdfFormPublisher` before the first NuGet package is published.
+The intended NuGet package ID is `PdfFormPublisher`.
 
 ## Your First Form
 
@@ -42,8 +42,8 @@ Expedited
 Create a class that inherits from `Form`. Each public property is matched to a PDF field.
 
 ```csharp
-using FormPublisher;
-using FormPublisher.CustomAttributes;
+using PdfFormPublisher;
+using PdfFormPublisher.Attributes;
 
 public sealed class SupplyRequestForm : Form
 {
@@ -87,13 +87,13 @@ byte[] pdfBytes = form.Publish();
 
 In this example, `Category` is a `string[]` because it represents a PDF choice field, such as a list box or dropdown. The PDF might offer choices like `Operations`, `Engineering`, `Medical`, and `Security`. For normal text fields, use `string`.
 
-`Expedited` is a `bool` because it represents a checkbox. When the value is `true`, FormPublisher uses the PDF field's checked value, such as `Yes` or `On`. When the value is `false`, it writes `Off`.
+`Expedited` is a `bool` because it represents a checkbox. When the value is `true`, PdfFormPublisher uses the PDF field's checked value, such as `Yes` or `On`. When the value is `false`, it writes `Off`.
 
 That is the core idea: make a model, fill in its values, and publish the PDF.
 
 ## How Field Matching Works
 
-FormPublisher uses property names by default.
+PdfFormPublisher uses property names by default.
 
 ```csharp
 public string Title { get; init; } = string.Empty;
@@ -143,12 +143,12 @@ Description.1
 Cost.1
 ```
 
-Here is an example of `TabularForm`. Note that the `Title` field is marked with `[DataLine(IsInitial = true)]` because it only exists on the first-page template. That tells FormPublisher to skip `Title` on continuation pages instead of looking for a field that is not there.
+Here is an example of `TabularForm`. Note that the `Title` field is marked with `[DataLine(IsInitial = true)]` because it only exists on the first-page template. That tells PdfFormPublisher to skip `Title` on continuation pages instead of looking for a field that is not there.
 
 ```csharp
-using FormPublisher;
-using FormPublisher.CustomAttributes;
-using FormPublisher.Interfaces;
+using PdfFormPublisher;
+using PdfFormPublisher.Attributes;
+using PdfFormPublisher.Interfaces;
 
 public sealed class InventoryForm : TabularForm
 {
@@ -211,11 +211,11 @@ var form = new InventoryForm(settings)
 byte[] pdfBytes = form.Publish();
 ```
 
-If the rows do not fit on the first page of the PDF, FormPublisher uses the continuation-page PDF for the remaining rows. In other words, if your form has overflow pages and `ContinuationPageFilePath` is configured, FormPublisher fills those pages as needed. After publishing, fields are renamed with `_sheet(n)` suffixes so each generated page can keep its own values.
+If the rows do not fit on the first page of the PDF, PdfFormPublisher uses the continuation-page PDF for the remaining rows. In other words, if your form has overflow pages and `ContinuationPageFilePath` is configured, PdfFormPublisher fills those pages as needed. After publishing, fields are renamed with `_sheet(n)` suffixes so each generated page can keep its own values.
 
 ## Roadmap
 
-FormPublisher is being modernized in small milestones. This README describes how the library works today.
+PdfFormPublisher is being modernized in small milestones. This README describes how the library works today.
 
 Planned follow-up work includes:
 
@@ -271,7 +271,7 @@ Use `[FormField]` when a property needs special handling.
 | `DataFormat` | Formats values such as dates and decimals before writing them. |
 | `false` | Excludes the property from PDF output. |
 
-Most values can be simple strings, numbers, dates, or decimals. Use `DataFormat` when you want a specific date or number format. Use `string[]` only for PDF choice fields, such as list boxes or combo boxes. For checkbox fields, use `bool`; FormPublisher uses the PDF field's checked value for `true` and writes `Off` for `false`.
+Most values can be simple strings, numbers, dates, or decimals. Use `DataFormat` when you want a specific date or number format. Use `string[]` only for PDF choice fields, such as list boxes or combo boxes. For checkbox fields, use `bool`; PdfFormPublisher uses the PDF field's checked value for `true` and writes `Off` for `false`.
 
 ### `DataLineAttribute`
 
@@ -287,26 +287,26 @@ Use `[DataLine]` for tabular behavior.
 
 ## Common Errors
 
-FormPublisher tries to fail with clear messages when something is wrong. These are good places to start when publishing does not work.
+PdfFormPublisher tries to fail with clear messages when something is wrong. These are good places to start when publishing does not work.
 
 | Problem | Why it happens | What to try |
 | --- | --- | --- |
 | The template path is blank. | A `Form` was created with `null`, an empty string, or whitespace for the template path. | Check the path passed to the form constructor. Make sure configuration values are loaded before creating the form. |
 | The template file does not exist. | The path points to a file that cannot be found from the running app. | Use an absolute path while debugging, or log the final path before calling `Publish()`. Check that the PDF is copied to the expected output folder. |
 | The PDF is not a fillable form. | The PDF does not contain AcroForm fields. A scanned PDF or flat PDF usually has no fields to fill. | Open the PDF in a PDF editor and confirm that the fields are real fillable form fields. |
-| A PDF field name does not match your model. | By default, FormPublisher looks for a PDF field with the same name as the C# property. | Check the field name in the PDF. If it differs from the property name, add `[FormField(FieldName = "PDF_FIELD_NAME")]`. |
+| A PDF field name does not match your model. | By default, PdfFormPublisher looks for a PDF field with the same name as the C# property. | Check the field name in the PDF. If it differs from the property name, add `[FormField(FieldName = "PDF_FIELD_NAME")]`. |
 | A `string[]` value fails during publishing. | `string[]` is only supported for PDF choice fields, such as list boxes or combo boxes. | Use `string` for regular text fields. Use `string[]` only when the target PDF field is a choice field. |
 | A checkbox value fails during publishing. | The PDF field may not be a checkbox, or it may not define a checked state. | Confirm that the target field is a checkbox. If the PDF uses unusual field setup, inspect the field's appearance states. |
 | A tabular form has no `Items`. | `TabularForm.Publish()` needs row data, even if there is only one row. | Set `Items` before calling `Publish()`. If there are no real rows, pass an empty list only after confirming that empty output is what you want. |
-| Rows overflow the first page, but continuation settings are missing. | More rows were provided than `FirstPageRowCount`, so FormPublisher needs a continuation template. | Set `ContinuationPageFilePath` and make sure `ContinuationPageRowCount` is greater than zero. |
+| Rows overflow the first page, but continuation settings are missing. | More rows were provided than `FirstPageRowCount`, so PdfFormPublisher needs a continuation template. | Set `ContinuationPageFilePath` and make sure `ContinuationPageRowCount` is greater than zero. |
 | A first-page field is missing on continuation pages. | The field exists only on the first-page template but was not marked as first-page-only. | Add `[DataLine(IsInitial = true)]` to that form property. Future versions may infer this automatically. |
 | `SheetSum` points to a value that is not a decimal. | Sheet totals currently add decimal row values. | Make sure the row property named by `SheetSum` is a `decimal`. If the row field uses `FieldName`, use the target PDF field name in `SheetSum`. |
 
 ## Dependency And Licensing Notes
 
-FormPublisher is licensed under the GNU Affero General Public License v3.0. See [LICENSE](LICENSE).
+PdfFormPublisher is licensed under the GNU Affero General Public License v3.0. See [LICENSE](LICENSE).
 
-FormPublisher currently uses iText 9.6.0 for PDF form reading, field assignment, and PDF merging. iText is dual-licensed under AGPLv3 and commercial terms, so review the dependency licensing notes before using this library in closed-source or commercial applications.
+PdfFormPublisher currently uses iText 9.6.0 for PDF form reading, field assignment, and PDF merging. iText is dual-licensed under AGPLv3 and commercial terms, so review the dependency licensing notes before using this library in closed-source or commercial applications.
 
 For more detail, see [docs/dependencies.md](docs/dependencies.md).
 
@@ -322,9 +322,9 @@ Repository layout decisions are documented in [docs/repository-layout.md](docs/r
 ## Build And Test
 
 ```powershell
-dotnet restore FormPublisher.slnx
-dotnet build FormPublisher.slnx
-dotnet test FormPublisher.slnx
+dotnet restore PdfFormPublisher.slnx
+dotnet build PdfFormPublisher.slnx
+dotnet test PdfFormPublisher.slnx
 ```
 
 The tests create small PDF templates at runtime, so no local PDF assets are required. For more detail, see [docs/testing.md](docs/testing.md).
