@@ -23,6 +23,19 @@ Current NuGet metadata:
 
 The root README is included in the package so NuGet can display package documentation.
 
+## Debugging Metadata
+
+Package builds produce a NuGet package and a symbol package:
+
+- `IncludeSymbols` is enabled.
+- `SymbolPackageFormat` is `snupkg`.
+- `DebugType` is `portable`.
+- `PublishRepositoryUrl` and `EmbedUntrackedSources` are enabled for Source Link metadata.
+- `Microsoft.SourceLink.GitHub` is referenced as a private build dependency.
+- `ContinuousIntegrationBuild` is enabled when building in GitHub Actions.
+
+The symbol package is intended for NuGet.org's symbol server and contains portable PDBs for consumer debugging.
+
 ## Versioning
 
 Use semantic versioning.
@@ -33,7 +46,6 @@ Use semantic versioning.
 
 ## Deferred
 
-- Symbols and source-link metadata remain tracked separately under #18.
 - CI pack validation remains tracked separately under #19.
 - Release publishing automation remains tracked separately under #20.
 - Consumer package-install smoke testing remains tracked separately under #21.
