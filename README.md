@@ -326,6 +326,8 @@ Repository layout decisions are documented in [docs/repository-layout.md](docs/r
 dotnet restore PdfFormPublisher.slnx
 dotnet build PdfFormPublisher.slnx
 dotnet test PdfFormPublisher.slnx
+dotnet pack src\PdfFormPublisher\PdfFormPublisher.csproj --configuration Release --no-build --output artifacts\packages
+.\scripts\package-smoke-test.ps1 -SkipSolutionBuild -SkipPack
 ```
 
-The tests create small PDF templates at runtime, so no local PDF assets are required. For more detail, see [docs/testing.md](docs/testing.md).
+The tests and package smoke test create small PDF templates at runtime, so no local PDF assets are required. For more detail, see [docs/testing.md](docs/testing.md) and [docs/packaging.md](docs/packaging.md).

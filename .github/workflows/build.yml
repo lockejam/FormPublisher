@@ -17,7 +17,7 @@ env:
 
 jobs:
   build:
-    name: Build, test, and pack
+    name: Build, test, pack, and smoke test
     runs-on: windows-latest
 
     steps:
@@ -40,6 +40,10 @@ jobs:
 
       - name: Pack
         run: dotnet pack src/PdfFormPublisher/PdfFormPublisher.csproj --configuration Release --no-build --output artifacts/packages
+
+      - name: Package smoke test
+        shell: pwsh
+        run: ./scripts/package-smoke-test.ps1 -SkipSolutionBuild -SkipPack
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
