@@ -1,12 +1,12 @@
 namespace PdfFormPublisher.Tests;
 
-public sealed class FormPublishingTests
+public sealed class PdfFormPublishingTests
 {
     [Fact]
     public void Publish_maps_model_values_to_pdf_fields()
     {
         var templatePath = TestPdfTemplates.CreateSimpleTemplate();
-        var form = new SimpleFormModel(templatePath)
+        var form = new SimplePdfFormModel(templatePath)
         {
             Title = "Supply Request",
             Alias = "FP-001",
@@ -29,7 +29,7 @@ public sealed class FormPublishingTests
         var templateBytes = File.ReadAllBytes(TestPdfTemplates.CreateSimpleTemplate());
         using (var templateStream = new MemoryStream(templateBytes))
         {
-            var form = new SimpleFormModel
+            var form = new SimplePdfFormModel
             {
                 Title = "Stream Request",
                 Alias = "FP-STREAM",
@@ -56,7 +56,7 @@ public sealed class FormPublishingTests
         {
             using (var outputStream = new MemoryStream())
             {
-                var form = new SimpleFormModel
+                var form = new SimplePdfFormModel
                 {
                     Title = "Output Stream Request",
                     Alias = "FP-OUTPUT",
@@ -81,7 +81,7 @@ public sealed class FormPublishingTests
     public void Publish_maps_bool_values_to_checkbox_states()
     {
         var templatePath = TestPdfTemplates.CreateCheckboxTemplate();
-        var form = new CheckboxFormModel(templatePath)
+        var form = new CheckboxPdfFormModel(templatePath)
         {
             DefaultChecked = true,
             CustomChecked = true,

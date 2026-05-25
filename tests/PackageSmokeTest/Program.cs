@@ -98,7 +98,7 @@ static PdfTextFormField CreateTextField(PdfDocument document, PdfPage page, stri
         .CreateText();
 }
 
-internal sealed class SmokeForm : Form
+internal sealed class SmokeForm : PdfForm
 {
     public SmokeForm()
     {
