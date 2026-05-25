@@ -19,7 +19,8 @@ PdfFormPublisher is still being modernized. The current code targets `.NET 10`.
 
 ## Add It To A Project
 
-PdfFormPublisher is not a NuGet package yet. For now, reference the project directly:
+PdfFormPublisher is not published to a public NuGet feed yet. During development,
+you can reference the project directly:
 
 ```xml
 <ProjectReference Include="..\path\to\src\PdfFormPublisher\PdfFormPublisher.csproj" />
@@ -27,6 +28,8 @@ PdfFormPublisher is not a NuGet package yet. For now, reference the project dire
 
 The intended NuGet package ID is `PdfFormPublisher`.
 Package metadata and versioning are documented in [docs/packaging.md](docs/packaging.md).
+Installation, local package consumption, and upgrade guidance are documented in
+[docs/package-consumption.md](docs/package-consumption.md).
 
 ## Your First Form
 
@@ -366,7 +369,7 @@ For more detail, see [docs/dependencies.md](docs/dependencies.md).
 
 ## Contributing And Security
 
-This project is still early and is not packaged on NuGet yet. See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, test commands, and style expectations.
+This project is still early and is not published to a public NuGet feed yet. See [CONTRIBUTING.md](CONTRIBUTING.md) for local setup, test commands, and style expectations.
 
 Please do not open public issues for suspected security vulnerabilities. See [SECURITY.md](SECURITY.md) for reporting guidance.
 

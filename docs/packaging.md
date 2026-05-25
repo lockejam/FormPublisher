@@ -54,6 +54,13 @@ The smoke test packs `PdfFormPublisher`, restores a separate consumer console pr
 from the local package output plus NuGet.org, and runs that project against a generated
 fillable PDF template.
 
+## Installation And Upgrade Guidance
+
+Consumer installation and upgrade guidance is documented in
+[package-consumption.md](package-consumption.md). Until release publishing is
+implemented, consumers should install from a local package output or CI package
+artifact and keep NuGet.org configured for transitive dependencies.
+
 ## Stream-Based Consumers
 
 Package consumers can publish without template file paths by passing readable template
@@ -89,4 +96,3 @@ Use semantic versioning.
 ## Deferred
 
 - Release publishing automation remains tracked separately under #20.
-- Installation and upgrade guidance remains tracked separately under #22.
