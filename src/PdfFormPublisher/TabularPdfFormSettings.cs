@@ -1,9 +1,9 @@
 namespace PdfFormPublisher;
 
 /// <summary>
-/// Defines the PDF template paths and row counts used by a tabular form.
+/// Defines the PDF template paths and row counts used by a tabular PDF form.
 /// </summary>
-public class FormSettings
+public class TabularPdfFormSettings
 {
     /// <summary>
     /// How many item rows fit on the first page template.

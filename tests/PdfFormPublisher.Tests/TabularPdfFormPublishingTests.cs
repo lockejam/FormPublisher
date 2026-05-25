@@ -1,13 +1,13 @@
 namespace PdfFormPublisher.Tests;
 
-public sealed class TabularFormPublishingTests
+public sealed class TabularPdfFormPublishingTests
 {
     [Fact]
     public void Publish_sets_tabular_rows_and_page_metadata()
     {
         var firstPageTemplate = TestPdfTemplates.CreateTabularTemplate("tabular-first", rowCount: 2, includeInitialFields: true);
         var continuationTemplate = TestPdfTemplates.CreateTabularTemplate("tabular-continuation", rowCount: 2, includeInitialFields: false);
-        var settings = new FormSettings
+        var settings = new TabularPdfFormSettings
         {
             FirstPageFilePath = firstPageTemplate,
             ContinuationPageFilePath = continuationTemplate,
@@ -15,7 +15,7 @@ public sealed class TabularFormPublishingTests
             ContinuationPageRowCount = 2
         };
 
-        var form = new TestInventoryForm(settings)
+        var form = new TestInventoryPdfForm(settings)
         {
             Title = "Tool List",
             Items =
@@ -52,13 +52,13 @@ public sealed class TabularFormPublishingTests
     {
         var firstPageTemplateBytes = File.ReadAllBytes(TestPdfTemplates.CreateTabularTemplate("tabular-stream-first", rowCount: 2, includeInitialFields: true));
         var continuationTemplateBytes = File.ReadAllBytes(TestPdfTemplates.CreateTabularTemplate("tabular-stream-continuation", rowCount: 2, includeInitialFields: false));
-        var settings = new FormSettings
+        var settings = new TabularPdfFormSettings
         {
             FirstPageRowCount = 2,
             ContinuationPageRowCount = 2
         };
 
-        var form = new TestInventoryForm(settings)
+        var form = new TestInventoryPdfForm(settings)
         {
             Title = "Stream Tool List",
             Items =

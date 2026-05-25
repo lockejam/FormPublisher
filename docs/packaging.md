@@ -67,7 +67,7 @@ byte[] pdfBytes = form.Publish(templateStream);
 form.Publish(templateStream, outputStream);
 ```
 
-Tabular forms keep row counts in `FormSettings` and accept first-page and continuation
+Tabular forms keep row counts in `TabularPdfFormSettings` and accept first-page and continuation
 template streams:
 
 ```csharp

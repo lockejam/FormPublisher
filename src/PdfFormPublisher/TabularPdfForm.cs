@@ -11,16 +11,16 @@ namespace PdfFormPublisher;
 /// <remarks>
 /// Inherit from this class for forms that have a first-page template and optional continuation
 /// pages. Put row data in <see cref="Items"/> and configure row counts and optional template paths with
-/// <see cref="FormSettings"/>.
+/// <see cref="TabularPdfFormSettings"/>.
 /// </remarks>
-public class TabularForm : IPdfFormPublisher, IPublish
+public class TabularPdfForm : IPdfFormPublisher, IPublish
 {
     /// <summary>
-    /// Creates a tabular form model with the PDF template and row settings to use.
+    /// Creates a tabular PDF form model with the PDF template and row settings to use.
     /// </summary>
     /// <param name="settings">The row counts and optional template paths used while publishing.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is null.</exception>
-    public TabularForm(FormSettings settings)
+    public TabularPdfForm(TabularPdfFormSettings settings)
     {
         ArgumentNullException.ThrowIfNull(settings);
         Settings = settings;
@@ -30,7 +30,7 @@ public class TabularForm : IPdfFormPublisher, IPublish
     /// The row counts and optional template paths used while publishing.
     /// </summary>
     [FormField(false)]
-    public FormSettings Settings { get; protected set; }
+    public TabularPdfFormSettings Settings { get; protected set; }
 
     /// <summary>
     /// The rows that should be written to the PDF form.
@@ -214,9 +214,9 @@ public class TabularForm : IPdfFormPublisher, IPublish
                             field.Value = sheetNumber;
                         }
 
-                        if (field.SheetSum is string sheetSumFieldName && sheetSumFieldName.Length > 0)
+                        if (field.SumOf is string sumOfFieldName && sumOfFieldName.Length > 0)
                         {
-                            field.Value = CalculateSheetSum(dataLines, sheetSumFieldName);
+                            field.Value = CalculateSum(dataLines, sumOfFieldName);
                         }
 
                         field.SetField(acroForm);
@@ -297,11 +297,11 @@ public class TabularForm : IPdfFormPublisher, IPublish
         return itemCount > Settings.FirstPageRowCount;
     }
 
-    private static decimal CalculateSheetSum(IEnumerable<DataLine> dataLines, string sheetSumFieldName)
+    private static decimal CalculateSum(IEnumerable<DataLine> dataLines, string sumOfFieldName)
     {
         decimal total = 0;
 
-        foreach (var formField in dataLines.SelectMany(line => line.FormFields).Where(f => f.Name == sheetSumFieldName))
+        foreach (var formField in dataLines.SelectMany(line => line.FormFields).Where(f => f.Name == sumOfFieldName))
         {
             if (formField.Value is null)
             {
@@ -310,7 +310,7 @@ public class TabularForm : IPdfFormPublisher, IPublish
 
             if (formField.Value is not decimal value)
             {
-                throw new InvalidOperationException($"SheetSum field '{sheetSumFieldName}' must contain decimal values.");
+                throw new InvalidOperationException($"SumOf field '{sumOfFieldName}' must contain decimal values.");
             }
 
             total += value;
