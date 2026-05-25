@@ -42,6 +42,24 @@ The GitHub Actions build restores, builds, tests, and packs the library in Relea
 Package artifacts are written to `artifacts/packages` and uploaded as the
 `pdf-form-publisher-packages` workflow artifact.
 
+## Release Publishing
+
+The release workflow builds, tests, packs, smoke-tests, uploads package artifacts,
+and can publish the package to NuGet.org.
+
+Release package versions come from one of two places:
+
+- tag pushes named `v{version}`, such as `v0.1.0-alpha.1`
+- the manual `workflow_dispatch` `package_version` input
+
+Manual workflow runs are dry runs unless `publish` is set to `true`. Tag-triggered
+release runs publish after validation succeeds.
+
+Publishing requires a `NUGET_API_KEY` secret available to the `nuget` GitHub
+environment. Configure that environment with any required reviewer approval before
+the first package release. The workflow publishes both the `.nupkg` package and
+the `.snupkg` symbol package to NuGet.org with `--skip-duplicate`.
+
 ## Consumer Smoke Test
 
 Run the package smoke test from the repository root:
@@ -54,12 +72,18 @@ The smoke test packs `PdfFormPublisher`, restores a separate consumer console pr
 from the local package output plus NuGet.org, and runs that project against a generated
 fillable PDF template.
 
+To validate a specific package version, pass the version explicitly:
+
+```powershell
+.\scripts\package-smoke-test.ps1 -PackageVersion 0.1.0-alpha.1
+```
+
 ## Installation And Upgrade Guidance
 
 Consumer installation and upgrade guidance is documented in
-[package-consumption.md](package-consumption.md). Until release publishing is
-implemented, consumers should install from a local package output or CI package
-artifact and keep NuGet.org configured for transitive dependencies.
+[package-consumption.md](package-consumption.md). Until a package version is
+published to NuGet.org, consumers should install from a local package output or
+CI package artifact and keep NuGet.org configured for transitive dependencies.
 
 ## Stream-Based Consumers
 
@@ -91,8 +115,6 @@ Use semantic versioning.
 
 - Keep the package on `0.x` while the public API is still settling.
 - Use prerelease labels, such as `0.1.0-alpha.1`, for early published packages.
-- Reserve `1.0.0` for the first release where the public API is considered stable.
+- Plan for `1.0.0` after the M5 example projects and tutorials milestone is
+  complete, assuming the public API is stable enough for real package consumers.
 
-## Deferred
-
-- Release publishing automation remains tracked separately under #20.

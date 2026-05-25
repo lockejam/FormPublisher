@@ -1,6 +1,7 @@
 param(
     [string] $Configuration = "Release",
     [string] $PackageOutput = "artifacts/packages",
+    [string] $PackageVersion,
     [switch] $SkipSolutionBuild,
     [switch] $SkipPack
 )
@@ -15,6 +16,11 @@ $nugetConfigPath = Join-Path $smokeTestOutputPath "NuGet.config"
 $solutionPath = Join-Path $repositoryRoot "PdfFormPublisher.slnx"
 $projectPath = Join-Path $repositoryRoot "src/PdfFormPublisher/PdfFormPublisher.csproj"
 $smokeTestProjectPath = Join-Path $repositoryRoot "tests/PackageSmokeTest/PackageSmokeTest.csproj"
+$resolvedPackageVersion = $null
+
+if (-not [string]::IsNullOrWhiteSpace($PackageVersion)) {
+    $resolvedPackageVersion = $PackageVersion.Trim()
+}
 
 function Invoke-DotNet {
     dotnet @args
@@ -48,12 +54,33 @@ if (-not $SkipSolutionBuild) {
 }
 
 if (-not $SkipPack) {
-    Invoke-DotNet pack $projectPath --configuration $Configuration --no-build --output $packageOutputPath
+    if ($null -eq $resolvedPackageVersion) {
+        Invoke-DotNet pack $projectPath --configuration $Configuration --no-build --output $packageOutputPath
+    } else {
+        Invoke-DotNet pack $projectPath --configuration $Configuration --no-build --output $packageOutputPath "-p:PackageVersion=$resolvedPackageVersion"
+    }
 }
 
-if (-not (Get-ChildItem -Path $packageOutputPath -Filter "PdfFormPublisher.*.nupkg" -File)) {
-    throw "No PdfFormPublisher package was found in '$packageOutputPath'."
+$packageVersionProperty = $null
+
+if ($null -eq $resolvedPackageVersion) {
+    if (-not (Get-ChildItem -Path $packageOutputPath -Filter "PdfFormPublisher.*.nupkg" -File)) {
+        throw "No PdfFormPublisher package was found in '$packageOutputPath'."
+    }
+
+    Invoke-DotNet restore $smokeTestProjectPath --configfile $nugetConfigPath --packages $smokeTestPackagesPath --no-cache --force
+} else {
+    $packageVersionProperty = "-p:PdfFormPublisherVersion=$resolvedPackageVersion"
+
+    if (-not (Get-ChildItem -Path $packageOutputPath -Filter "PdfFormPublisher.$resolvedPackageVersion.nupkg" -File)) {
+        throw "PdfFormPublisher package version '$resolvedPackageVersion' was not found in '$packageOutputPath'."
+    }
+
+    Invoke-DotNet restore $smokeTestProjectPath --configfile $nugetConfigPath --packages $smokeTestPackagesPath --no-cache --force $packageVersionProperty
 }
 
-Invoke-DotNet restore $smokeTestProjectPath --configfile $nugetConfigPath --packages $smokeTestPackagesPath --no-cache --force
-Invoke-DotNet run --project $smokeTestProjectPath --configuration $Configuration --no-restore
+if ($null -eq $packageVersionProperty) {
+    Invoke-DotNet run --project $smokeTestProjectPath --configuration $Configuration --no-restore
+} else {
+    Invoke-DotNet run --project $smokeTestProjectPath --configuration $Configuration --no-restore $packageVersionProperty
+}
