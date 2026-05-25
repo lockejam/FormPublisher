@@ -32,7 +32,7 @@ the local package and public dependencies:
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
-    <add key="pdf-form-publisher-local" value="C:\path\to\FormPublisher\artifacts\packages" />
+    <add key="pdf-form-publisher-local" value="C:\path\to\PdfFormPublisher\artifacts\packages" />
     <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
   </packageSources>
 </configuration>
