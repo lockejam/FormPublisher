@@ -156,6 +156,10 @@ internal static class TestPdfTemplates
 
 internal sealed class SimpleFormModel : Form
 {
+    public SimpleFormModel()
+    {
+    }
+
     public SimpleFormModel(string filePath)
         : base(filePath)
     {

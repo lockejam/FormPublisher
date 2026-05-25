@@ -29,6 +29,32 @@ if (fields["REQUEST_ID"] != "PKG-001")
     throw new InvalidOperationException($"Expected REQUEST_ID field to be filled, but found '{fields["REQUEST_ID"]}'.");
 }
 
+using (var templateStream = File.OpenRead(templatePath))
+{
+    using (var outputStream = new MemoryStream())
+    {
+        var streamForm = new SmokeForm
+        {
+            Title = "Package stream smoke test",
+            RequestId = "PKG-STREAM"
+        };
+
+        streamForm.Publish(templateStream, outputStream);
+
+        var streamFields = ReadFieldValues(outputStream.ToArray());
+
+        if (streamFields["Title"] != "Package stream smoke test")
+        {
+            throw new InvalidOperationException($"Expected stream Title field to be filled, but found '{streamFields["Title"]}'.");
+        }
+
+        if (streamFields["REQUEST_ID"] != "PKG-STREAM")
+        {
+            throw new InvalidOperationException($"Expected stream REQUEST_ID field to be filled, but found '{streamFields["REQUEST_ID"]}'.");
+        }
+    }
+}
+
 Console.WriteLine("PdfFormPublisher package smoke test passed.");
 
 static void CreateTemplate(string filePath)
@@ -74,6 +100,10 @@ static PdfTextFormField CreateTextField(PdfDocument document, PdfPage page, stri
 
 internal sealed class SmokeForm : Form
 {
+    public SmokeForm()
+    {
+    }
+
     public SmokeForm(string filePath)
         : base(filePath)
     {

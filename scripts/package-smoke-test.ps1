@@ -27,6 +27,10 @@ function Invoke-DotNet {
 New-Item -ItemType Directory -Path $packageOutputPath -Force | Out-Null
 New-Item -ItemType Directory -Path $smokeTestOutputPath -Force | Out-Null
 
+if (Test-Path -LiteralPath $smokeTestPackagesPath) {
+    Remove-Item -LiteralPath $smokeTestPackagesPath -Recurse -Force
+}
+
 @"
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -51,5 +55,5 @@ if (-not (Get-ChildItem -Path $packageOutputPath -Filter "PdfFormPublisher.*.nup
     throw "No PdfFormPublisher package was found in '$packageOutputPath'."
 }
 
-Invoke-DotNet restore $smokeTestProjectPath --configfile $nugetConfigPath --packages $smokeTestPackagesPath
+Invoke-DotNet restore $smokeTestProjectPath --configfile $nugetConfigPath --packages $smokeTestPackagesPath --no-cache --force
 Invoke-DotNet run --project $smokeTestProjectPath --configuration $Configuration --no-restore
