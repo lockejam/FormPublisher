@@ -92,6 +92,45 @@ In this example, `Category` is a `string[]` because it represents a PDF choice f
 
 That is the core idea: make a model, fill in its values, and publish the PDF.
 
+## Publishing From Streams
+
+Use stream-based publishing when templates come from ASP.NET uploads, cloud storage, embedded resources, or test fixtures. A stream-based form model does not need a template file path.
+
+```csharp
+public sealed class SupplyRequestForm : Form
+{
+    public string Title { get; init; } = string.Empty;
+
+    [FormField(FieldName = "REQUEST_ID")]
+    public string RequestId { get; init; } = string.Empty;
+}
+```
+
+Publish to a `byte[]`:
+
+```csharp
+using var templateStream = File.OpenRead("templates/supply-request.pdf");
+
+var form = new SupplyRequestForm
+{
+    Title = "Station Supply Request",
+    RequestId = "DS9-001"
+};
+
+byte[] pdfBytes = form.Publish(templateStream);
+```
+
+Or write directly to an output stream:
+
+```csharp
+using var templateStream = File.OpenRead("templates/supply-request.pdf");
+using var outputStream = new MemoryStream();
+
+form.Publish(templateStream, outputStream);
+```
+
+PdfFormPublisher leaves caller-provided streams open. Template streams are read from their current position, and output streams are written at their current position.
+
 ## How Field Matching Works
 
 PdfFormPublisher uses property names by default.
@@ -214,6 +253,16 @@ byte[] pdfBytes = form.Publish();
 
 If the rows do not fit on the first page of the PDF, PdfFormPublisher uses the continuation-page PDF for the remaining rows. In other words, if your form has overflow pages and `ContinuationPageFilePath` is configured, PdfFormPublisher fills those pages as needed. After publishing, fields are renamed with `_sheet(n)` suffixes so each generated page can keep its own values.
 
+Tabular forms can also publish from template streams. Keep the row counts in `FormSettings`, then pass first-page and continuation-page template streams to `Publish`:
+
+```csharp
+using var firstPageTemplateStream = File.OpenRead("templates/inventory-first.pdf");
+using var continuationTemplateStream = File.OpenRead("templates/inventory-continuation.pdf");
+using var outputStream = new MemoryStream();
+
+form.Publish(firstPageTemplateStream, continuationTemplateStream, outputStream);
+```
+
 ## Roadmap
 
 PdfFormPublisher is being modernized in small milestones. This README describes how the library works today.
@@ -234,6 +283,8 @@ Use this for a PDF that can be filled from one model and one template file.
 - Pass the template path to the constructor.
 - Add public properties for PDF fields.
 - Call `Publish()` to get the completed PDF bytes.
+- Call `Publish(templateStream)` or `Publish(templateStream, outputStream)` when the template is already available as a stream.
+- Call `PublishTo(outputStream)` to write a path-based publish result to a stream.
 
 ### `TabularForm`
 
@@ -242,6 +293,8 @@ Use this for a PDF with repeated rows.
 - Pass a `FormSettings` object to the constructor.
 - Set `Items` to your row models.
 - Call `Publish()` to get the completed PDF bytes.
+- Call `Publish(firstPageTemplateStream, continuationTemplateStream)` or `Publish(firstPageTemplateStream, continuationTemplateStream, outputStream)` when templates are already available as streams.
+- Call `PublishTo(outputStream)` to write a path-based publish result to a stream.
 
 ### `FormSettings`
 
@@ -249,8 +302,8 @@ Use this for a PDF with repeated rows.
 
 | Property | What it means |
 | --- | --- |
-| `FirstPageFilePath` | Path to the first-page PDF template. |
-| `ContinuationPageFilePath` | Path to the continuation-page PDF template. Required when rows overflow the first page. |
+| `FirstPageFilePath` | Path to the first-page PDF template for path-based publishing. |
+| `ContinuationPageFilePath` | Path to the continuation-page PDF template for path-based publishing. Required when rows overflow the first page. |
 | `FirstPageRowCount` | Number of rows available on the first page. |
 | `ContinuationPageRowCount` | Number of rows available on each continuation page. Must be greater than zero when rows overflow the first page. |
 

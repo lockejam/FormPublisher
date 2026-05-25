@@ -16,6 +16,13 @@ namespace PdfFormPublisher;
 public class Form : IPdfFormPublisher, IPublish
 {
     /// <summary>
+    /// Creates a form model that can publish with a template stream supplied at publish time.
+    /// </summary>
+    protected Form()
+    {
+    }
+
+    /// <summary>
     /// Creates a form model for the PDF template at the supplied file path.
     /// </summary>
     /// <param name="filePath">The path to the existing PDF form template.</param>
@@ -27,10 +34,10 @@ public class Form : IPdfFormPublisher, IPublish
     }
 
     /// <summary>
-    /// The path to the existing PDF form template used by this model.
+    /// The path to the existing PDF form template used by path-based publishing.
     /// </summary>
     [FormField(false)]
-    public string FilePath { get; protected set; }
+    public string FilePath { get; protected set; } = string.Empty;
 
     /// <summary>
     /// Fills the PDF template with this model's public property values.
@@ -42,19 +49,73 @@ public class Form : IPdfFormPublisher, IPublish
     /// <exception cref="FileNotFoundException">Thrown when the PDF template file does not exist.</exception>
     public byte[] Publish()
     {
-        var filePath = ValidateTemplatePath();
+        var templateSource = PdfTemplateSource.FromFilePath(FilePath, nameof(FilePath));
 
+        return Publish(templateSource);
+    }
+
+    /// <summary>
+    /// Fills the file-path PDF template with this model's public property values and writes the result to a stream.
+    /// </summary>
+    /// <param name="outputStream">The writable stream that receives the filled PDF. The stream is left open.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="outputStream"/> is not writable.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="outputStream"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the template path is missing or the PDF does not contain an AcroForm.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">Thrown when the PDF template file does not exist.</exception>
+    public void PublishTo(Stream outputStream)
+    {
+        ValidateOutputStream(outputStream, nameof(outputStream));
+        WriteToOutput(Publish(), outputStream);
+    }
+
+    /// <summary>
+    /// Fills a PDF template stream with this model's public property values.
+    /// </summary>
+    /// <param name="templateStream">The readable stream containing the PDF template. The stream is left open.</param>
+    /// <returns>The filled PDF as a byte array.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="templateStream"/> is not readable.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="templateStream"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the PDF does not contain an AcroForm.</exception>
+    public byte[] Publish(Stream templateStream)
+    {
+        var templateSource = PdfTemplateSource.FromStream(templateStream, nameof(templateStream), "template stream");
+
+        return Publish(templateSource);
+    }
+
+    /// <summary>
+    /// Fills a PDF template stream with this model's public property values and writes the result to a stream.
+    /// </summary>
+    /// <param name="templateStream">The readable stream containing the PDF template. The stream is left open.</param>
+    /// <param name="outputStream">The writable stream that receives the filled PDF. The stream is left open.</param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="templateStream"/> is not readable or <paramref name="outputStream"/> is not writable.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="templateStream"/> or <paramref name="outputStream"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">Thrown when the PDF does not contain an AcroForm.</exception>
+    public void Publish(Stream templateStream, Stream outputStream)
+    {
+        ValidateOutputStream(outputStream, nameof(outputStream));
+        WriteToOutput(Publish(templateStream), outputStream);
+    }
+
+    private byte[] Publish(PdfTemplateSource templateSource)
+    {
         // Get property information of this form.
         var fields = this.GetFormFields().ToList();
 
         using (var ms = new MemoryStream())
         {
-            using (var reader = new PdfReader(filePath))
+            using (var reader = templateSource.CreateReader())
             {
                 using (var document = new PdfDocument(reader, new PdfWriter(ms)))
                 {
                     var acroForm = PdfAcroForm.GetAcroForm(document, false)
-                        ?? throw new InvalidOperationException($"The PDF template '{filePath}' does not contain an AcroForm.");
+                        ?? throw new InvalidOperationException($"The PDF template {templateSource.Description} does not contain an AcroForm.");
 
                     foreach (var field in fields)
                     {
@@ -67,18 +128,18 @@ public class Form : IPdfFormPublisher, IPublish
         }
     }
 
-    private string ValidateTemplatePath()
+    private static void ValidateOutputStream(Stream outputStream, string parameterName)
     {
-        if (string.IsNullOrWhiteSpace(FilePath))
-        {
-            throw new InvalidOperationException("FilePath must be set before publishing.");
-        }
+        ArgumentNullException.ThrowIfNull(outputStream, parameterName);
 
-        if (!File.Exists(FilePath))
+        if (!outputStream.CanWrite)
         {
-            throw new FileNotFoundException($"The PDF template '{FilePath}' was not found.", FilePath);
+            throw new ArgumentException("Output stream must be writable.", parameterName);
         }
+    }
 
-        return FilePath;
+    private static void WriteToOutput(byte[] pdfBytes, Stream outputStream)
+    {
+        outputStream.Write(pdfBytes, 0, pdfBytes.Length);
     }
 }

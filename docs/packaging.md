@@ -54,6 +54,30 @@ The smoke test packs `PdfFormPublisher`, restores a separate consumer console pr
 from the local package output plus NuGet.org, and runs that project against a generated
 fillable PDF template.
 
+## Stream-Based Consumers
+
+Package consumers can publish without template file paths by passing readable template
+streams to `Publish`. This supports ASP.NET, cloud storage, embedded resources, and
+other workflows where the PDF template is not a local file.
+
+Simple forms support:
+
+```csharp
+byte[] pdfBytes = form.Publish(templateStream);
+form.Publish(templateStream, outputStream);
+```
+
+Tabular forms keep row counts in `FormSettings` and accept first-page and continuation
+template streams:
+
+```csharp
+byte[] pdfBytes = form.Publish(firstPageTemplateStream, continuationTemplateStream);
+form.Publish(firstPageTemplateStream, continuationTemplateStream, outputStream);
+```
+
+Caller-provided streams remain open. Template streams are read from their current
+position, and output streams are written at their current position.
+
 ## Versioning
 
 Use semantic versioning.

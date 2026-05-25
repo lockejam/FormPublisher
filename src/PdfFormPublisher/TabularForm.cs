@@ -10,7 +10,7 @@ namespace PdfFormPublisher;
 /// </summary>
 /// <remarks>
 /// Inherit from this class for forms that have a first-page template and optional continuation
-/// pages. Put row data in <see cref="Items"/> and configure row counts and template paths with
+/// pages. Put row data in <see cref="Items"/> and configure row counts and optional template paths with
 /// <see cref="FormSettings"/>.
 /// </remarks>
 public class TabularForm : IPdfFormPublisher, IPublish
@@ -18,7 +18,7 @@ public class TabularForm : IPdfFormPublisher, IPublish
     /// <summary>
     /// Creates a tabular form model with the PDF template and row settings to use.
     /// </summary>
-    /// <param name="settings">The template paths and row counts used while publishing.</param>
+    /// <param name="settings">The row counts and optional template paths used while publishing.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="settings"/> is null.</exception>
     public TabularForm(FormSettings settings)
     {
@@ -27,7 +27,7 @@ public class TabularForm : IPdfFormPublisher, IPublish
     }
 
     /// <summary>
-    /// The template paths and row counts used while publishing.
+    /// The row counts and optional template paths used while publishing.
     /// </summary>
     [FormField(false)]
     public FormSettings Settings { get; protected set; }
@@ -55,6 +55,94 @@ public class TabularForm : IPdfFormPublisher, IPublish
         var itemFields = GetValidatedItemFields();
         ValidatePublishState(itemFields.Count);
 
+        var firstPageTemplate = PdfTemplateSource.FromFilePath(Settings.FirstPageFilePath, nameof(Settings.FirstPageFilePath));
+        PdfTemplateSource? continuationPageTemplate = null;
+
+        if (RequiresContinuationTemplate(itemFields.Count))
+        {
+            continuationPageTemplate = PdfTemplateSource.FromFilePath(Settings.ContinuationPageFilePath, nameof(Settings.ContinuationPageFilePath));
+        }
+
+        return Publish(itemFields, firstPageTemplate, continuationPageTemplate);
+    }
+
+    /// <summary>
+    /// Fills the configured file-path PDF templates and writes the result to a stream.
+    /// </summary>
+    /// <param name="outputStream">The writable stream that receives the filled PDF. The stream is left open.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="outputStream"/> is not writable.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="outputStream"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when required settings are missing, row counts are invalid, or a template does not contain an AcroForm.
+    /// </exception>
+    /// <exception cref="FileNotFoundException">Thrown when a required PDF template file does not exist.</exception>
+    public void PublishTo(Stream outputStream)
+    {
+        ValidateOutputStream(outputStream, nameof(outputStream));
+        WriteToOutput(Publish(), outputStream);
+    }
+
+    /// <summary>
+    /// Fills PDF template streams with the model values and row data.
+    /// </summary>
+    /// <param name="firstPageTemplateStream">The readable stream containing the first-page PDF template. The stream is left open.</param>
+    /// <param name="continuationPageTemplateStream">
+    /// The readable stream containing the continuation-page PDF template. Required when rows overflow the first page.
+    /// The stream is left open.
+    /// </param>
+    /// <returns>The filled PDF as a byte array.</returns>
+    /// <exception cref="ArgumentException">Thrown when a supplied template stream is not readable.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="firstPageTemplateStream"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when required settings are missing, row counts are invalid, a continuation stream is required, or a template does not contain an AcroForm.
+    /// </exception>
+    public byte[] Publish(Stream firstPageTemplateStream, Stream? continuationPageTemplateStream = null)
+    {
+        var itemFields = GetValidatedItemFields();
+        ValidatePublishState(itemFields.Count);
+
+        var firstPageTemplate = PdfTemplateSource.FromStream(firstPageTemplateStream, nameof(firstPageTemplateStream), "first page template stream");
+        PdfTemplateSource? continuationPageTemplate = null;
+
+        if (RequiresContinuationTemplate(itemFields.Count))
+        {
+            if (continuationPageTemplateStream is null)
+            {
+                throw new InvalidOperationException($"{nameof(continuationPageTemplateStream)} must be provided when items exceed the first-page row count.");
+            }
+
+            continuationPageTemplate = PdfTemplateSource.FromStream(continuationPageTemplateStream, nameof(continuationPageTemplateStream), "continuation page template stream");
+        }
+
+        return Publish(itemFields, firstPageTemplate, continuationPageTemplate);
+    }
+
+    /// <summary>
+    /// Fills PDF template streams with the model values and row data and writes the result to a stream.
+    /// </summary>
+    /// <param name="firstPageTemplateStream">The readable stream containing the first-page PDF template. The stream is left open.</param>
+    /// <param name="continuationPageTemplateStream">
+    /// The readable stream containing the continuation-page PDF template. Required when rows overflow the first page.
+    /// The stream is left open.
+    /// </param>
+    /// <param name="outputStream">The writable stream that receives the filled PDF. The stream is left open.</param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when a supplied template stream is not readable or <paramref name="outputStream"/> is not writable.
+    /// </exception>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="firstPageTemplateStream"/> or <paramref name="outputStream"/> is null.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when required settings are missing, row counts are invalid, a continuation stream is required, or a template does not contain an AcroForm.
+    /// </exception>
+    public void Publish(Stream firstPageTemplateStream, Stream? continuationPageTemplateStream, Stream outputStream)
+    {
+        ValidateOutputStream(outputStream, nameof(outputStream));
+        WriteToOutput(Publish(firstPageTemplateStream, continuationPageTemplateStream), outputStream);
+    }
+
+    private byte[] Publish(List<DataLine> itemFields, PdfTemplateSource firstPageTemplate, PdfTemplateSource? continuationPageTemplate)
+    {
         // Get property information of this form and of the form's items.
         var fields = this.GetFormFields().ToList();
 
@@ -79,7 +167,11 @@ public class TabularForm : IPdfFormPublisher, IPublish
 
                 foreach (var chunk in chunks)
                 {
-                    var bytes = CreateForm(fields, chunk, sheetNumber, chunks.Count, firstPass);
+                    var templateSource = firstPass
+                        ? firstPageTemplate
+                        : continuationPageTemplate ?? throw new InvalidOperationException("A continuation page template is required for continuation pages.");
+
+                    var bytes = CreateForm(templateSource, fields, chunk, sheetNumber, chunks.Count, firstPass);
 
                     using (var byteStream = new MemoryStream(bytes))
                     {
@@ -98,18 +190,16 @@ public class TabularForm : IPdfFormPublisher, IPublish
         }
     }
 
-    private byte[] CreateForm(IEnumerable<FormField> fields, IEnumerable<DataLine> dataLines, int sheetNumber, int numberOfSheets, bool firstPass)
+    private static byte[] CreateForm(PdfTemplateSource templateSource, IEnumerable<FormField> fields, IEnumerable<DataLine> dataLines, int sheetNumber, int numberOfSheets, bool firstPass)
     {
-        var templatePath = firstPass ? Settings.FirstPageFilePath : Settings.ContinuationPageFilePath;
-
         using (var ms = new MemoryStream())
         {
-            using (var reader = new PdfReader(templatePath))
+            using (var reader = templateSource.CreateReader())
             {
                 using (var document = new PdfDocument(reader, new PdfWriter(ms)))
                 {
                     var acroForm = PdfAcroForm.GetAcroForm(document, false)
-                        ?? throw new InvalidOperationException($"The PDF template '{templatePath}' does not contain an AcroForm.");
+                        ?? throw new InvalidOperationException($"The PDF template {templateSource.Description} does not contain an AcroForm.");
 
                     // iterate of form fields
                     foreach (var field in fields.Where(f => firstPass || (firstPass == f.IsInitial)))
@@ -193,17 +283,18 @@ public class TabularForm : IPdfFormPublisher, IPublish
             throw new InvalidOperationException("Settings.ContinuationPageRowCount cannot be negative.");
         }
 
-        ValidateTemplatePath(Settings.FirstPageFilePath, nameof(Settings.FirstPageFilePath));
-
-        if (itemCount > Settings.FirstPageRowCount)
+        if (RequiresContinuationTemplate(itemCount))
         {
             if (Settings.ContinuationPageRowCount <= 0)
             {
                 throw new InvalidOperationException("Settings.ContinuationPageRowCount must be greater than zero when items exceed the first-page row count.");
             }
-
-            ValidateTemplatePath(Settings.ContinuationPageFilePath, nameof(Settings.ContinuationPageFilePath));
         }
+    }
+
+    private bool RequiresContinuationTemplate(int itemCount)
+    {
+        return itemCount > Settings.FirstPageRowCount;
     }
 
     private static decimal CalculateSheetSum(IEnumerable<DataLine> dataLines, string sheetSumFieldName)
@@ -228,16 +319,18 @@ public class TabularForm : IPdfFormPublisher, IPublish
         return total;
     }
 
-    private static void ValidateTemplatePath(string? filePath, string propertyName)
+    private static void ValidateOutputStream(Stream outputStream, string parameterName)
     {
-        if (string.IsNullOrWhiteSpace(filePath))
-        {
-            throw new InvalidOperationException($"{propertyName} must be set before publishing.");
-        }
+        ArgumentNullException.ThrowIfNull(outputStream, parameterName);
 
-        if (!File.Exists(filePath))
+        if (!outputStream.CanWrite)
         {
-            throw new FileNotFoundException($"The PDF template '{filePath}' was not found.", filePath);
+            throw new ArgumentException("Output stream must be writable.", parameterName);
         }
+    }
+
+    private static void WriteToOutput(byte[] pdfBytes, Stream outputStream)
+    {
+        outputStream.Write(pdfBytes, 0, pdfBytes.Length);
     }
 }
