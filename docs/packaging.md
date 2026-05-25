@@ -15,9 +15,9 @@ Current NuGet metadata:
 | `Authors` | `lockejam` |
 | `Description` | `A small, focused C# library for filling existing PDF forms from model objects.` |
 | `PackageLicenseExpression` | `AGPL-3.0-only` |
-| `PackageProjectUrl` | `https://github.com/lockejam/FormPublisher` |
+| `PackageProjectUrl` | `https://github.com/lockejam/PdfFormPublisher` |
 | `RepositoryType` | `git` |
-| `RepositoryUrl` | `https://github.com/lockejam/FormPublisher` |
+| `RepositoryUrl` | `https://github.com/lockejam/PdfFormPublisher` |
 | `PackageTags` | `pdf;forms;pdf-forms;acroform;itext` |
 | `PackageReadmeFile` | `README.md` |
 
