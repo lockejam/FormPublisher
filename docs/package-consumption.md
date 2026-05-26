@@ -5,8 +5,9 @@ Reviewed for the M3 packaging-readiness milestone.
 ## Current Package State
 
 The package ID is `PdfFormPublisher`, and the current package version is `0.1.0`.
-The package is not published to a public feed yet. Until the release workflow is
-added, consume it from a local package output or from a CI package artifact.
+The package is not published to a public feed yet. Until a package version is
+published through the release workflow, consume it from a local package output
+or from a CI package artifact.
 
 PdfFormPublisher currently targets `.NET 10`. Consumer projects must target a
 compatible framework.
@@ -54,8 +55,8 @@ dotnet restore --no-cache --force
 
 ## Install From A Public Feed
 
-After the release workflow publishes the package to the intended public feed, a
-consumer project should install it with the normal NuGet package command:
+After the release workflow publishes the package to NuGet.org, a consumer project
+should install it with the normal NuGet package command:
 
 ```powershell
 dotnet add package PdfFormPublisher --version 0.1.0

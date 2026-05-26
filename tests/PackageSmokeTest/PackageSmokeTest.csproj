@@ -5,10 +5,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <PdfFormPublisherVersion Condition="'$(PdfFormPublisherVersion)' == ''">0.1.0</PdfFormPublisherVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PdfFormPublisher" Version="0.1.0" />
+    <PackageReference Include="PdfFormPublisher" Version="$(PdfFormPublisherVersion)" />
     <PackageReference Include="itext" Version="9.6.0" />
   </ItemGroup>
 
