@@ -1,5 +1,4 @@
 name: Release
-
 on:
   push:
     tags:
@@ -49,7 +48,9 @@ jobs:
           $inputVersion = "${{ inputs.package_version }}"
 
           if ($eventName -eq "push") {
-              if (-not $refName.StartsWith("v", [System.StringComparison]::OrdinalIgnoreCase)) {
+              $comparison = [System.StringComparison]::OrdinalIgnoreCase
+
+              if (-not $refName.StartsWith("v", $comparison)) {
                   throw "Release tags must start with 'v'."
               }
 
@@ -62,8 +63,12 @@ jobs:
               throw "Package version is required."
           }
 
-          if ($packageVersion -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$') {
-              throw "Package version '$packageVersion' must be a SemVer value like 0.1.0 or 0.1.0-alpha.1."
+          $semVerPattern = '^\d+\.\d+\.\d+(-[0-9A-Za-z][0-9A-Za-z.-]*)?$'
+
+          if ($packageVersion -notmatch $semVerPattern) {
+              $message = "Package version '$packageVersion' must be SemVer"
+              $message += ", like 0.1.0 or 0.1.0-alpha.1."
+              throw $message
           }
 
           "package_version=$packageVersion" >> $env:GITHUB_OUTPUT
@@ -85,17 +90,35 @@ jobs:
         run: dotnet restore PdfFormPublisher.slnx
 
       - name: Build
-        run: dotnet build PdfFormPublisher.slnx --configuration Release --no-restore
+        shell: pwsh
+        run: |
+          dotnet build PdfFormPublisher.slnx `
+              --configuration Release `
+              --no-restore
 
       - name: Test
-        run: dotnet test PdfFormPublisher.slnx --configuration Release --no-build
+        shell: pwsh
+        run: |
+          dotnet test PdfFormPublisher.slnx `
+              --configuration Release `
+              --no-build
 
       - name: Pack
-        run: dotnet pack src/PdfFormPublisher/PdfFormPublisher.csproj --configuration Release --no-build --output artifacts/packages -p:PackageVersion=${{ steps.version.outputs.package_version }}
+        shell: pwsh
+        run: |
+          dotnet pack src/PdfFormPublisher/PdfFormPublisher.csproj `
+              --configuration Release `
+              --no-build `
+              --output artifacts/packages `
+              -p:PackageVersion=${{ steps.version.outputs.package_version }}
 
       - name: Package smoke test
         shell: pwsh
-        run: ./scripts/package-smoke-test.ps1 -SkipSolutionBuild -SkipPack -PackageVersion ${{ steps.version.outputs.package_version }}
+        run: |
+          ./scripts/package-smoke-test.ps1 `
+              -SkipSolutionBuild `
+              -SkipPack `
+              -PackageVersion ${{ steps.version.outputs.package_version }}
 
       - name: Upload package artifacts
         uses: actions/upload-artifact@v4
@@ -129,29 +152,45 @@ jobs:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
         run: |
           if ([string]::IsNullOrWhiteSpace($env:NUGET_API_KEY)) {
-              throw "NUGET_API_KEY must be configured before publishing packages."
+              throw "NUGET_API_KEY must be configured before publishing."
           }
 
-          $packages = Get-ChildItem -Path "artifacts/packages" -Filter "*.nupkg" -File
+          $packages = Get-ChildItem `
+              -Path "artifacts/packages" `
+              -Filter "*.nupkg" `
+              -File
 
           if (-not $packages) {
               throw "No NuGet packages were found in artifacts/packages."
           }
 
           foreach ($package in $packages) {
-              dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+              dotnet nuget push $package.FullName `
+                  --api-key $env:NUGET_API_KEY `
+                  --source "https://api.nuget.org/v3/index.json" `
+                  --skip-duplicate
 
               if ($LASTEXITCODE -ne 0) {
-                  throw "Publishing '$($package.Name)' failed with exit code $LASTEXITCODE."
+                  $message = "Publishing '$($package.Name)' failed with"
+                  $message += " exit code $LASTEXITCODE."
+                  throw $message
               }
           }
 
-          $symbolPackages = Get-ChildItem -Path "artifacts/packages" -Filter "*.snupkg" -File
+          $symbolPackages = Get-ChildItem `
+              -Path "artifacts/packages" `
+              -Filter "*.snupkg" `
+              -File
 
           foreach ($package in $symbolPackages) {
-              dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+              dotnet nuget push $package.FullName `
+                  --api-key $env:NUGET_API_KEY `
+                  --source "https://api.nuget.org/v3/index.json" `
+                  --skip-duplicate
 
               if ($LASTEXITCODE -ne 0) {
-                  throw "Publishing '$($package.Name)' failed with exit code $LASTEXITCODE."
+                  $message = "Publishing '$($package.Name)' failed with"
+                  $message += " exit code $LASTEXITCODE."
+                  throw $message
               }
           }
